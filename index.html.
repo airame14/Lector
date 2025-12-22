@@ -1,11 +1,67 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spicy VIP</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://adsgram.ai/sdk.js"></script>
+    <style>
+        body { 
+            background-color: #1a1a1a; 
+            color: #fff; 
+            font-family: Arial, sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+            text-align: center;
+        }
+        h2 { color: #ff4757; margin-bottom: 10px; }
+        p { font-size: 16px; margin-bottom: 30px; color: #ccc; }
+        
+        .btn { 
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            color: white; 
+            padding: 15px 35px; 
+            border: none; 
+            border-radius: 25px; 
+            font-size: 18px; 
+            cursor: pointer; 
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(255, 65, 108, 0.4);
+            transition: transform 0.2s;
+        }
+        .btn:active { transform: scale(0.95); }
+    </style>
 </head>
-<body style="background:#000; color:#fff; text-align:center;">
-    <h2>Spicy VIP</h2>
-    <script>const AdController = window.Adsgram.init({ blockId: "123" });</script>
+<body>
+
+    <h2>🔥 Contenido Exclusivo</h2>
+    <p>Apoya el canal viendo un video corto<br>para acceder a la carpeta.</p>
+    
+    <button class="btn" onclick="verAnuncio()">🔓 ABRIR CARPETA VIP</button>
+
+    <script>
+        // TU CONFIGURACIÓN LISTA
+        const BLOCK_ID = "19685";
+        const DRIVE_LINK = "https://drive.google.com/drive/folders/19sEqSl9_i4TeG1PKO1i2rjmvdjF6_CEF"; 
+
+        function verAnuncio() {
+            const AdController = window.Adsgram.init({ blockId: BLOCK_ID });
+            
+            AdController.show().then(() => {
+                // Si ve el anuncio, se abre tu carpeta de Drive
+                window.location.href = DRIVE_LINK;
+            }).catch((result) => {
+                // Si falla o lo cierra antes de tiempo
+                alert("⚠️ Para ver el contenido debes terminar el video.");
+            });
+        }
+    </script>
+
 </body>
 </html>
+
