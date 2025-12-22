@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://adsgram.ai/sdk.js"></script>
+</head>
+<body style="background:#000; color:#fff; text-align:center;">
+    <h2>Spicy VIP</h2>
+    <script>const AdController = window.Adsgram.init({ blockId: "123" });</script>
+</body>
+</html>
