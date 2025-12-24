@@ -20,7 +20,7 @@
             text-align: center;
         }
         h2 { color: #ff4757; margin-bottom: 10px; }
-        p { font-size: 16px; margin-bottom: 30px; color: #ccc; }
+        p { font-size: 16px; margin-bottom: 30px; color: #ccc; padding: 0 20px; }
         
         .btn { 
             background: linear-gradient(45deg, #ff416c, #ff4b2b);
@@ -40,29 +40,31 @@
 <body>
 
     <h2>🔥 Contenido Exclusivo</h2>
-    <p>Apoya el canal viendo un video corto<br>para acceder a la carpeta.</p>
+    <p>Toca el botón. Si hay anuncio disponible, apóyanos viéndolo. Si no, entrarás directo.</p>
     
     <button class="btn" onclick="verAnuncio()">🔓 ABRIR CARPETA VIP</button>
 
     <script>
-        // TU CONFIGURACIÓN LISTA
+        // TUS DATOS CONFIGURADOS
         const BLOCK_ID = "19685";
         const DRIVE_LINK = "https://drive.google.com/drive/folders/19sEqSl9_i4TeG1PKO1i2rjmvdjF6_CEF"; 
 
         function verAnuncio() {
+            // Inicializamos AdsGram
             const AdController = window.Adsgram.init({ blockId: BLOCK_ID });
             
+            // Intentamos mostrar el video
             AdController.show().then(() => {
-                // Si ve el anuncio, se abre tu carpeta de Drive
+                // CASO 1: El usuario vio el video con éxito
                 window.location.href = DRIVE_LINK;
             }).catch((result) => {
-                // Si falla o lo cierra antes de tiempo
-                alert("⚠️ Para ver el contenido debes terminar el video.");
+                // CASO 2: Falló el anuncio (por país o error)
+                // ¡AQUÍ ESTÁ EL CAMBIO! Te dejamos pasar igual.
+                // alert("No hay anuncios disponibles en tu región, pasando directo..."); 
+                window.location.href = DRIVE_LINK;
             });
         }
     </script>
 
 </body>
 </html>
-
-
