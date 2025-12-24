@@ -6,6 +6,7 @@
     <title>Spicy VIP</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://adsgram.ai/sdk.js"></script>
+    
     <style>
         body { 
             background-color: #1a1a1a; 
@@ -40,27 +41,33 @@
 <body>
 
     <h2>🔥 Contenido Exclusivo</h2>
-    <p>Toca el botón. Si hay anuncio disponible, apóyanos viéndolo. Si no, entrarás directo.</p>
+    <p>Toca el botón para acceder.</p>
     
     <button class="btn" onclick="verAnuncio()">🔓 ABRIR CARPETA VIP</button>
 
     <script>
-        // TUS DATOS CONFIGURADOS
+        // TUS DATOS
         const BLOCK_ID = "19685";
         const DRIVE_LINK = "https://drive.google.com/drive/folders/19sEqSl9_i4TeG1PKO1i2rjmvdjF6_CEF"; 
 
         function verAnuncio() {
-            // Inicializamos AdsGram
+            // PASO 1: VERIFICAR SI ADSGRAM CARGÓ
+            // Si tu internet bloqueó el script, window.Adsgram no existirá.
+            if (typeof window.Adsgram === 'undefined') {
+                // Si falla la carga, vamos directo al Drive
+                window.location.href = DRIVE_LINK;
+                return; // Terminamos aquí
+            }
+
+            // PASO 2: SI SÍ CARGÓ, INTENTAMOS MOSTRAR VIDEO
             const AdController = window.Adsgram.init({ blockId: BLOCK_ID });
             
-            // Intentamos mostrar el video
             AdController.show().then(() => {
-                // CASO 1: El usuario vio el video con éxito
+                // Éxito: vio el video
                 window.location.href = DRIVE_LINK;
             }).catch((result) => {
-                // CASO 2: Falló el anuncio (por país o error)
-                // ¡AQUÍ ESTÁ EL CAMBIO! Te dejamos pasar igual.
-                // alert("No hay anuncios disponibles en tu región, pasando directo..."); 
+                // Error: cargó el sistema pero no hay videos disponibles
+                // Pasamos directo también
                 window.location.href = DRIVE_LINK;
             });
         }
