@@ -65,9 +65,11 @@
             AdController.show().then(() => {
                 // Éxito: vio el video
                 window.location.href = DRIVE_LINK;
-            }).catch((result) => {
-                // Error: cargó el sistema pero no hay videos disponibles
-                // Pasamos directo también
+           }).catch((result) => {
+                // ESTO TE DIRÁ EL ERROR EXACTO EN PANTALLA
+                alert("Error de AdsGram: " + JSON.stringify(result));
+                
+                // Después de que leas el error, te manda al drive
                 window.location.href = DRIVE_LINK;
             });
         }
