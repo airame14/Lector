@@ -2,78 +2,324 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spicy VIP</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://adsgram.ai/sdk.js"></script>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dulce Pesadilla Navideña</title>
     <style>
-        body { 
-            background-color: #1a1a1a; 
-            color: #fff; 
-            font-family: Arial, sans-serif; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
-            margin: 0; 
-            text-align: center;
-        }
-        h2 { color: #ff4757; margin-bottom: 10px; }
-        p { font-size: 16px; margin-bottom: 30px; color: #ccc; padding: 0 20px; }
+        /* ESTILOS DE LA MINI APP */
+        body { margin: 0; padding: 0; background-color: #000; color: white; font-family: sans-serif; overflow: hidden; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        #game-container { width: 100%; max-width: 450px; height: 100%; position: relative; background-color: #1a1a1a; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
         
-        .btn { 
-            background: linear-gradient(45deg, #ff416c, #ff4b2b);
-            color: white; 
-            padding: 15px 35px; 
-            border: none; 
-            border-radius: 25px; 
-            font-size: 18px; 
-            cursor: pointer; 
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(255, 65, 108, 0.4);
-            transition: transform 0.2s;
-        }
-        .btn:active { transform: scale(0.95); }
+        #background-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; transition: opacity 0.5s; z-index: 1; }
+        
+        #character-layer { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); height: 95%; z-index: 2; pointer-events: none; transition: opacity 0.3s; }
+        #character-img { height: 100%; width: auto; object-fit: contain; filter: drop-shadow(0 0 10px rgba(0,0,0,0.5)); }
+        
+        #effect-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; }
+        
+        #ui-layer { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; z-index: 10; display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 20px; }
+        .text-box { background: rgba(0, 0, 0, 0.85); margin: 10px 15px; padding: 15px; border-radius: 10px; border: 1px solid #444; min-height: 120px; display: flex; flex-direction: column; position: relative; }
+        .name-tag { font-weight: bold; color: #ff4d4d; margin-bottom: 8px; text-transform: uppercase; font-size: 0.9em; }
+        .dialogue { font-size: 1.05em; line-height: 1.5; color: #eee; }
+        
+        .choices-container { display: flex; flex-direction: column; gap: 12px; padding: 0 20px; margin-bottom: 15px; }
+        .btn { padding: 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 1em; font-weight: bold; text-align: center; }
+        .btn-normal { background: #333; color: #fff; border: 1px solid #555; }
+        .btn-premium { background: linear-gradient(135deg, #b8860b, #ffd700); color: #2b1d00; border: 1px solid #ffcc00; position: relative; }
+        .btn-premium::after { content: "💎"; margin-left: 8px; }
+        
+        .next-arrow { position: absolute; bottom: 10px; right: 15px; color: #aaa; font-size: 1.5em; animation: bounce 1s infinite; cursor: pointer; }
+        .hidden { display: none !important; }
+        .shake { animation: shake 0.5s; }
+        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
     </style>
 </head>
 <body>
 
-    <h2>🔥 Contenido Exclusivo</h2>
-    <p>Toca el botón para acceder.</p>
+<div id="game-container">
+    <div id="background-layer"></div>
+    <div id="character-layer" class="hidden"><img id="character-img" src="" alt="Personaje"></div>
+    <div id="effect-layer"></div>
+    <div id="ui-layer">
+        <div id="choices-area" class="choices-container hidden"></div>
+        <div id="text-area" class="text-box">
+            <div id="char-name" class="name-tag"></div>
+            <div id="dialogue-text" class="dialogue"></div>
+            <div id="next-btn" class="next-arrow">▼</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* === CONFIGURACIÓN DE TUS FOTOS === */
+    // Estos nombres coinciden EXACTAMENTE con tu captura de pantalla
+    const JOHN_SALA = 'santa_sala.jpg';
+    const JOHN_CUARTO = 'santa_cuarto.jpg';
+    const JOHN_DESVISTE = 'santa_desviste.jpg';
+    const JOHN_ASESINO = 'santa_cara_asesino.jpg';
+    const JOHN_RIE = 'santa_rie.jpg';
+    const JOHN_CERCA = 'santa_cerca.jpg';
     
-    <button class="btn" onclick="verAnuncio()">🔓 ABRIR CARPETA VIP</button>
+    const CG_CAMA_ARRIBA = 'santa_cama_abajo.jpg';
+    const CG_BESO_MANO = 'beso_mano.jpg';
+    const CG_BESO_PIERNA = 'beso_pierna.jpg';
+    const CG_LEVANTA_PIERNA = 'levanta_pierna.jpg';
+    const CG_NOTA = 'mensaje_final.jpg';
+    
+    const BG_SALA_LUZ = 'sala_luz.jpg';
+    const BG_SALA_OSCURA = 'sala_no_luz.jpg';
+    const BG_CUARTO_NOCHE = 'cuarto_noche.jpg';
+    const BG_CUARTO_DIA = 'cuarto_revuelto.jpg';
+    const BG_MUERTE = 'pantalla_muerte.jpg';
+    const BG_NEGRO = '#000';
 
-    <script>
-        // TUS DATOS
-        const BLOCK_ID = "19685";
-        const DRIVE_LINK = "https://drive.google.com/drive/folders/19sEqSl9_i4TeG1PKO1i2rjmvdjF6_CEF"; 
-
-        function verAnuncio() {
-            // PASO 1: VERIFICAR SI ADSGRAM CARGÓ
-            // Si tu internet bloqueó el script, window.Adsgram no existirá.
-            if (typeof window.Adsgram === 'undefined') {
-                // Si falla la carga, vamos directo al Drive
-                window.location.href = DRIVE_LINK;
-                return; // Terminamos aquí
-            }
-
-            // PASO 2: SI SÍ CARGÓ, INTENTAMOS MOSTRAR VIDEO
-            const AdController = window.Adsgram.init({ blockId: BLOCK_ID });
-            
-            AdController.show().then(() => {
-                // Éxito: vio el video
-                window.location.href = DRIVE_LINK;
-           }).catch((result) => {
-                // ESTO TE DIRÁ EL ERROR EXACTO EN PANTALLA
-                alert("Error de AdsGram: " + JSON.stringify(result));
-                
-                // Después de que leas el error, te manda al drive
-                window.location.href = DRIVE_LINK;
-            });
+    /* === HISTORIA === */
+    const story = {
+        "start": {
+            bg: BG_NEGRO,
+            text: "Dicen que la Navidad es mágica... Pero para mí, sola en casa, es solo silencio.",
+            name: "Tú",
+            next: "sala_intro"
+        },
+        "sala_intro": {
+            bg: BG_SALA_LUZ, 
+            text: "Llegué del trabajo arrastrando los pies. ¿Para qué decoré si estoy sola? De niña esperaba a Santa, pero nunca llegó.",
+            name: "Tú",
+            next: "apagar_luz"
+        },
+        "apagar_luz": {
+            bg: BG_SALA_OSCURA,
+            text: "Mejor apago todo y me voy a dormir. No tiene sentido seguir despierta.",
+            name: "Tú",
+            next: "ruido"
+        },
+        "ruido": {
+            bg: BG_SALA_OSCURA,
+            sound: "shake",
+            text: "¡CRASH! ... ¿Qué...? ¿Qué fue eso? Juraría que cerré la puerta con llave.",
+            name: "Tú",
+            choices: [
+                { text: "Tengo miedo (Esconderme)", target: "muerte_1", type: "normal" },
+                { text: "Investigar el ruido", target: "encuentro", type: "premium" }
+            ]
+        },
+        // --- MUERTE 1 ---
+        "muerte_1": {
+            bg: BG_NEGRO,
+            text: "Me escondo bajo las sábanas... Escucho pasos... 'Te encontré'.",
+            name: "Voz",
+            next: "game_over_1"
+        },
+        "game_over_1": {
+            bg: BG_MUERTE, 
+            text: "Sentí un golpe seco y luego oscuridad. [FINAL MALO]",
+            name: "Sistema",
+            restart: true
+        },
+        // --- ENCUENTRO ---
+        "encuentro": {
+            bg: BG_SALA_OSCURA,
+            char: JOHN_SALA,
+            text: "Salgo a la sala. Hay un hombre vestido de Santa Claus... Espera. Es él. John Red, el asesino de las noticias.",
+            name: "Tú",
+            next: "encuentro_2"
+        },
+        "encuentro_2": {
+            bg: BG_SALA_OSCURA,
+            char: JOHN_ASESINO,
+            text: "Vaya bienvenida... ¿Es así como tratas a Santa cuando viene a visitarte?",
+            name: "John Red",
+            choices: [
+                { text: "¡Sé quién eres! (Confrontar)", target: "muerte_2", type: "normal" },
+                { text: "Seguirle el juego (Seducir)", target: "seducion_1", type: "premium" }
+            ]
+        },
+        "muerte_2": {
+            bg: BG_SALA_OSCURA,
+            char: JOHN_ASESINO,
+            text: "Qué pena... odio cuando rompen la inmersión. Será rápido.",
+            name: "John Red",
+            next: "game_over_2"
+        },
+        "game_over_2": {
+            bg: BG_MUERTE,
+            text: "El cuchillo brilla antes de clavarse en mi pecho. [FINAL MALO]",
+            name: "Sistema",
+            restart: true
+        },
+        "seducion_1": {
+            bg: BG_SALA_OSCURA,
+            char: JOHN_RIE,
+            text: "Vaya... No sabía que Santa sería tan joven y atractivo.",
+            name: "Tú",
+            next: "seducion_2"
+        },
+        "seducion_2": {
+            bg: BG_SALA_OSCURA,
+            char: JOHN_SALA,
+            text: "Jajaja... Interesante. Dime, ¿has sido una chica mala este año?",
+            name: "John Red",
+            choices: [
+                { text: "He sido buena...", target: "muerte_3", type: "normal" },
+                { text: "He sido buena... pero quiero ser mala.", target: "cuarto_intro", type: "premium" }
+            ]
+        },
+        "muerte_3": {
+            bg: BG_MUERTE,
+            text: "Las chicas buenas son aburridas. [FINAL MALO: ABURRIDO]",
+            name: "John Red",
+            restart: true
+        },
+        "cuarto_intro": {
+            bg: BG_SALA_OSCURA,
+            char: JOHN_CERCA,
+            text: "Me agarra de la cintura. 'Santa no acepta devoluciones'.",
+            name: "John Red",
+            next: "cama_cg"
+        },
+        "cama_cg": {
+            bg: CG_CAMA_ARRIBA,
+            text: "De repente estoy en la cama. Él me mira desde arriba con esa intensidad depredadora.",
+            name: "Narración",
+            next: "desvestirse"
+        },
+        "desvestirse": {
+            bg: BG_CUARTO_NOCHE,
+            char: JOHN_DESVISTE,
+            text: "'¿No tienes calor?' Se abre el traje. Sus abdominales son perfectos.",
+            name: "Tú",
+            next: "opcion_desnudo"
+        },
+        "opcion_desnudo": {
+            bg: BG_CUARTO_NOCHE,
+            char: JOHN_DESVISTE,
+            text: "'¿Por qué no desenvuelves tú misma el regalo?'",
+            name: "John Red",
+            choices: [
+                { text: "Bajarle los pantalones", target: "sexo_oral", type: "premium" },
+                { text: "Que lo haga él (Voyeur)", target: "sexo_oral", type: "premium" }
+            ]
+        },
+        "sexo_oral": {
+            bg: BG_NEGRO,
+            text: "Me empuja a la cama. 'Voy a comerme este pastel'.",
+            name: "John Red",
+            next: "cg_beso_mano"
+        },
+        "cg_beso_mano": {
+            bg: CG_BESO_MANO,
+            text: "Besa mi mano con una caballerosidad falsa y oscura...",
+            name: "Narración",
+            next: "cg_levanta"
+        },
+        "cg_levanta": {
+            bg: CG_LEVANTA_PIERNA,
+            text: "Levanta mi pierna con firmeza. Siento el frío del aire y el calor de su mano.",
+            name: "Narración",
+            next: "cg_beso_pierna"
+        },
+        "cg_beso_pierna": {
+            bg: CG_BESO_PIERNA,
+            text: "Sus labios recorren mi muslo... acercándose peligrosamente a mi centro.",
+            name: "Narración",
+            next: "acto_final"
+        },
+        "acto_final": {
+            bg: CG_CAMA_ARRIBA,
+            text: "Se posiciona entre mis piernas. '¿Sigo?'.",
+            name: "John Red",
+            choices: [
+                { text: "No pares", target: "final_comun", type: "normal" },
+                { text: "Ni se te ocurra parar", target: "final_comun", type: "premium" }
+            ]
+        },
+        "final_comun": {
+            bg: BG_NEGRO,
+            text: "Entra de golpe. Pasamos la noche entre gemidos y violencia contenida... hasta que caemos rendidos.",
+            name: "Narración",
+            next: "manana"
+        },
+        "manana": {
+            bg: BG_CUARTO_DIA,
+            text: "Despierto adolorida. La cama está vacía y revuelta. ¿Fue un sueño? No... hay una nota.",
+            name: "Tú",
+            next: "ver_nota"
+        },
+        "ver_nota": {
+            bg: CG_NOTA,
+            text: "'Espero que no me olvides. Espera mi regalo la próxima Navidad. - Tu Santa'.",
+            name: "Nota",
+            next: "fin"
+        },
+        "fin": {
+            bg: BG_NEGRO,
+            text: "FIN DEL CAPÍTULO 1.",
+            name: "Sistema",
+            restart: true
         }
-    </script>
+    };
 
+    /* MOTOR DEL JUEGO */
+    const bgLayer = document.getElementById("background-layer");
+    const charLayer = document.getElementById("character-layer");
+    const charImg = document.getElementById("character-img");
+    const textName = document.getElementById("char-name");
+    const textDialog = document.getElementById("dialogue-text");
+    const nextBtn = document.getElementById("next-btn");
+    const choicesArea = document.getElementById("choices-area");
+    const effectLayer = document.getElementById("effect-layer");
+
+    function renderNode(nodeId) {
+        const node = story[nodeId];
+        nextBtn.classList.remove("hidden");
+        choicesArea.classList.add("hidden");
+        choicesArea.innerHTML = "";
+        effectLayer.className = ""; 
+
+        if (node.bg) {
+            if (node.bg.startsWith("#")) {
+                bgLayer.style.backgroundImage = "none";
+                bgLayer.style.backgroundColor = node.bg;
+            } else {
+                bgLayer.style.backgroundColor = "#000";
+                bgLayer.style.backgroundImage = `url('${node.bg}')`; 
+            }
+        }
+
+        if (node.char) {
+            charLayer.classList.remove("hidden");
+            charImg.src = node.char;
+        } else {
+            charLayer.classList.add("hidden");
+        }
+
+        textName.textContent = node.name || "";
+        textDialog.textContent = node.text || "...";
+
+        if (node.sound === "shake") {
+            document.body.classList.add("shake");
+            setTimeout(() => document.body.classList.remove("shake"), 500);
+        }
+
+        if (node.choices) {
+            nextBtn.classList.add("hidden");
+            choicesArea.classList.remove("hidden");
+            node.choices.forEach(choice => {
+                const btn = document.createElement("button");
+                btn.className = choice.type === "premium" ? "btn btn-premium" : "btn btn-normal";
+                btn.textContent = choice.text;
+                btn.onclick = () => renderNode(choice.target);
+                choicesArea.appendChild(btn);
+            });
+        } else if (node.restart) {
+            nextBtn.onclick = () => location.reload();
+            nextBtn.textContent = "↻";
+        } else {
+            nextBtn.onclick = () => renderNode(node.next);
+            nextBtn.textContent = "▼";
+        }
+    }
+
+    window.onload = () => { renderNode("start"); };
+</script>
 </body>
 </html>
