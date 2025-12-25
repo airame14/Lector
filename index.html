@@ -5,64 +5,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dulce Pesadilla Navideña</title>
     <style>
-        /* ESTILOS GENERALES */
+        /* --- ESTILOS GENERALES (Reset) --- */
+        * { box-sizing: border-box; } /* Esto evita que los bordes rompan el diseño */
+        
         body { margin: 0; padding: 0; background-color: #000; color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100vh; display: flex; justify-content: center; align-items: center; }
         
         #game-container { width: 100%; max-width: 450px; height: 100%; position: relative; background-color: #000; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
         
-        /* --- SISTEMA DE FUSIÓN (CROSSFADE) --- */
+        /* --- SISTEMA DE IMAGEN (Una sola capa + Fusión) --- */
         .scene-layer { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background-size: cover; 
-            background-position: center; 
-            background-repeat: no-repeat;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background-size: cover; background-position: center; background-repeat: no-repeat;
             z-index: 1;
         }
-
         #scene-layer-back { z-index: 1; }
-
-        #scene-layer-front { 
-            z-index: 2;
-            opacity: 0; 
-            transition: opacity 0.8s ease-in-out; /* Suavidad de la fusión */
-        }
-
+        #scene-layer-front { z-index: 2; opacity: 0; transition: opacity 0.5s ease-in-out; }
         .fade-in { opacity: 1 !important; }
-        /* ------------------------------------ */
-        
-        /* EFECTOS Y UI */
-        #effect-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; transition: background 0.1s; }
-        
-        #ui-layer { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; z-index: 10; display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 20px; pointer-events: none; }
+
+        /* --- INTERFAZ (UI) --- */
+        #ui-layer { 
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; 
+            z-index: 10; display: flex; flex-direction: column; justify-content: flex-end; 
+            padding: 20px; pointer-events: none; 
+        }
         
         .interactive { pointer-events: auto; }
 
-        .text-box { background: rgba(0, 0, 0, 0.85); margin: 10px 15px; padding: 15px; border-radius: 10px; border: 1px solid #444; min-height: 120px; display: flex; flex-direction: column; position: relative; }
-        .name-tag { font-weight: bold; color: #ff4d4d; margin-bottom: 8px; text-transform: uppercase; font-size: 0.9em; letter-spacing: 1px; }
-        .dialogue { font-size: 1.05em; line-height: 1.4; color: #eee; }
+        /* CAJA DE TEXTO (Reforzada) */
+        .text-box { 
+            background: rgba(0, 0, 0, 0.85); 
+            width: 100%; /* Ocupa todo el ancho disponible */
+            padding: 20px; 
+            border-radius: 12px; 
+            border: 1px solid #555; 
+            min-height: 130px; 
+            display: flex; 
+            flex-direction: column; 
+            position: relative; 
+            margin-bottom: 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .name-tag { font-weight: bold; color: #ff4d4d; margin-bottom: 10px; text-transform: uppercase; font-size: 0.95em; letter-spacing: 1px; }
+        .dialogue { font-size: 1.1em; line-height: 1.5; color: #eee; margin-bottom: 20px; }
         
-        .choices-container { display: flex; flex-direction: column; gap: 12px; padding: 0 20px; margin-bottom: 15px; }
-        .btn { padding: 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 1em; font-weight: bold; text-align: center; transition: transform 0.1s; }
-        .btn:active { transform: scale(0.98); }
-        
-        .btn-normal { background: #333; color: #fff; border: 1px solid #555; }
-        /* Estilo visual premium pero sin candado funcional para la prueba */
+        /* FLECHA */
+        .next-arrow { 
+            position: absolute; bottom: 10px; right: 15px; 
+            color: #aaa; font-size: 1.5em; cursor: pointer; 
+            animation: bounce 1s infinite; 
+        }
+
+        /* OPCIONES */
+        .choices-container { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-bottom: 15px; }
+        .btn { 
+            padding: 15px; border-radius: 8px; border: none; cursor: pointer; 
+            font-size: 1em; font-weight: bold; text-align: center; width: 100%;
+        }
+        .btn-normal { background: #333; color: white; border: 1px solid #555; }
         .btn-premium { background: linear-gradient(135deg, #b8860b, #ffd700); color: #2b1d00; border: 1px solid #ffcc00; font-weight: 800; }
-        .btn-premium::after { content: "💎"; margin-left: 8px; }
         
-        .next-arrow { position: absolute; bottom: 10px; right: 15px; color: #aaa; font-size: 1.5em; animation: bounce 1s infinite; cursor: pointer; }
         .hidden { display: none !important; }
         
-        /* ANIMACIONES */
-        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
-        .red-flash { background-color: rgba(200, 0, 0, 0.6) !important; }
-        
+        /* EFECTOS */
+        .shake { animation: shake 0.5s; }
+        .red-flash { position: absolute; top:0; left:0; width:100%; height:100%; background: red; opacity: 0; pointer-events: none; z-index: 20; transition: opacity 0.2s; }
+        .flash-active { opacity: 0.5 !important; }
+
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
-        @keyframes shake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-6px, 0, 0); } 40%, 60% { transform: translate3d(6px, 0, 0); } }
+        @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -2px); } 100% { transform: translate(1px, -1px); } }
     </style>
 </head>
 <body>
@@ -70,41 +81,49 @@
 <div id="game-container">
     <div id="scene-layer-back" class="scene-layer"></div>
     <div id="scene-layer-front" class="scene-layer"></div>
-    <div id="effect-layer"></div>
+    <div id="flash-overlay" class="red-flash"></div>
 
     <div id="ui-layer">
         <div id="choices-area" class="choices-container interactive hidden"></div>
+        
         <div id="text-area" class="text-box interactive">
-            <div id="char-name" class="name-tag"></div>
-            <div id="dialogue-text" class="dialogue"></div>
+            <div id="char-name" class="name-tag">Nombre</div>
+            <div id="dialogue-text" class="dialogue">...</div>
             <div id="next-btn" class="next-arrow">▼</div>
         </div>
     </div>
 </div>
 
 <script>
-    /* === CONFIGURACIÓN DE IMÁGENES === */
-    // Escenas
+    /* === TUS IMÁGENES EXACTAS (De GitHub) === */
     const SALA_LUZ = 'sala_luz.jpg';
     const SALA_NO_LUZ = 'sala_no_luz.jpg';
     const CUARTO_NOCHE = 'cuarto_noche.jpg';
     const PUERTA_SALIR = 'puerta_salir.jpg';
     const PANTALLA_MUERTE = 'pantalla_muerte.jpg';
     
-    // John Red
     const JOHN_SALA = 'santa_sala.jpg';
     const JOHN_ASESINO = 'santa_cara_asesino.jpg';
     const JOHN_RIE = 'santa_rie.jpg';
     const JOHN_CUARTO = 'santa_cuarto.jpg';
+    const JOHN_CERCA = 'santa_cerca.jpg';
+    const JOHN_DESVISTE = 'santa_desviste.jpg';
     
-    // Color
+    // CGs (Escenas especiales)
+    const CG_CAMA = 'santa_cama_abajo.jpg';
+    const CG_BESO_MANO = 'beso_mano.jpg';
+    const CG_BESO_PIERNA = 'beso_pierna.jpg';
+    const CG_LEVANTA = 'levanta_pierna.jpg';
+    const CG_NOTA = 'mensaje_final.jpg';
+    const CG_REVUELTO = 'cuarto_revuelto.jpg';
+
     const BG_NEGRO = '#000';
 
     /* === HISTORIA === */
     const story = {
-        // ESCENA 1
+        // --- ESCENA 1: INTRO ---
         "start": {
-            img: BG_NEGRO,
+            img: BG_NEGRO, // Empieza en negro (Correcto)
             text: "\"Dicen que la Navidad es la época más mágica del año... Risas, familia, regalos bajo el árbol.\"",
             name: "Tú",
             next: "intro_2"
@@ -116,14 +135,14 @@
             next: "sala_llegada"
         },
         "sala_llegada": {
-            img: SALA_LUZ,
+            img: SALA_LUZ, // Aquí aparece la sala
             text: "\"Llegué del trabajo arrastrando los pies. El frío se me ha metido hasta los huesos.\"",
             name: "Tú",
             next: "sala_pensamiento"
         },
         "sala_pensamiento": {
             img: SALA_LUZ,
-            text: "\"Mira este lugar... Lleno de luces y adornos. ¿Para qué me molesté en decorar si vivo sola? Supongo que es la costumbre.\"",
+            text: "\"Mira este lugar... Lleno de luces y adornos. ¿Para qué me molesté en decorar si vivo sola?\"",
             name: "Tú",
             next: "sala_infancia"
         },
@@ -135,13 +154,13 @@
         },
         "sala_santa_fake": {
             img: SALA_LUZ,
-            text: "Aguantaba la respiración, esperando ver a Santa Claus bajar por la chimenea. Nunca lo vi. El sueño siempre me vencía antes de medianoche.",
+            text: "Aguantaba la respiración, esperando ver a Santa Claus bajar por la chimenea. Nunca lo vi.",
             name: "Tú",
             next: "sala_realidad"
         },
         "sala_realidad": {
             img: SALA_LUZ,
-            text: "Cosas de niños ingenuos. Los milagros no bajan por la chimenea. En la vida real, si alguien entra en tu casa a medianoche...",
+            text: "Cosas de niños ingenuos. Los milagros no bajan por la chimenea. En la vida real, si alguien entra a medianoche...",
             name: "Tú",
             next: "sala_peligro"
         },
@@ -149,7 +168,7 @@
             img: SALA_LUZ,
             text: "...probablemente no venga a dejar regalos.",
             name: "Tú",
-            effect: "flash", // Parpadeo
+            effect: "flash",
             next: "sala_apagar"
         },
         "sala_apagar": {
@@ -165,7 +184,7 @@
             next: "cuarto_ruido"
         },
         
-        // EL RUIDO
+        // --- EL RUIDO ---
         "cuarto_ruido": {
             img: CUARTO_NOCHE,
             sound: "shake",
@@ -173,7 +192,7 @@
             name: "Tú",
             choices: [
                 { text: "Tengo miedo (Esconderme)", target: "ruta_miedo", type: "normal" },
-                { text: "Investigar (Ir a la sala)", target: "ruta_investigar", type: "premium" } // Premium visual pero gratis
+                { text: "Investigar (Ir a la sala)", target: "ruta_investigar", type: "premium" }
             ]
         },
 
@@ -186,19 +205,7 @@
         },
         "miedo_2": {
             img: BG_NEGRO,
-            text: "\"Cierro los ojos con fuerza. Mi corazón late tan fuerte que me duele el pecho.\"",
-            name: "Tú",
-            next: "miedo_3"
-        },
-        "miedo_3": {
-            img: BG_NEGRO,
-            text: "\"Escucho pasos. Pesados. Lentos. Se acercan a la cama... Se detienen justo a mi lado.\"",
-            name: "Tú",
-            next: "miedo_4"
-        },
-        "miedo_4": {
-            img: BG_NEGRO,
-            text: "\"Por favor, que sea un sueño, por favor...\"",
+            text: "\"Cierro los ojos con fuerza. Escucho pasos pesados... Se detienen justo a mi lado.\"",
             name: "Tú",
             next: "miedo_voz"
         },
@@ -211,7 +218,7 @@
         },
         "muerte_1": {
             img: PANTALLA_MUERTE,
-            text: "\"Ni siquiera me dio tiempo a gritar... Sentí un estallido de dolor en la cabeza... frío... y luego nada.\"",
+            text: "\"Ni siquiera me dio tiempo a gritar... Sentí un estallido de dolor... y luego nada.\"",
             name: "Tú",
             next: "fin_malo_1"
         },
@@ -231,25 +238,13 @@
         },
         "encuentro_john": {
             img: JOHN_SALA,
-            text: "\"Allí estaba él. Un hombre alto... ¿vestido de Santa Claus? Pero... espera.\"",
+            text: "\"Allí estaba él. Un hombre alto... ¿vestido de Santa Claus?\"",
             name: "Tú",
             next: "encuentro_reconocimiento"
         },
         "encuentro_reconocimiento": {
             img: JOHN_SALA,
-            text: "\"Esa sonrisa... Esa mirada roja y fría... Mi sangre se hiela. Lo he visto en las noticias esta mañana.\"",
-            name: "Tú",
-            next: "encuentro_noticias"
-        },
-        "encuentro_noticias": {
-            img: JOHN_SALA,
-            text: "\"Es él. 'El Asesino de Nochebuena'. John Red. Buscan a un psicópata que se escapó del psiquiátrico de alta seguridad.\"",
-            name: "Tú",
-            next: "encuentro_panico"
-        },
-        "encuentro_panico": {
-            img: JOHN_SALA,
-            text: "\"Dijeron que era extremadamente peligroso y manipulador. Dios mío... ¿Por qué yo? Tengo que pensar rápido.\"",
+            text: "\"Esa sonrisa... Esa mirada roja... Es él. 'El Asesino de Nochebuena'. John Red.\"",
             name: "Tú",
             next: "john_habla_1"
         },
@@ -266,19 +261,13 @@
         // --- RUTA CONFRONTAR (MUERTE) ---
         "ruta_confrontar": {
             img: JOHN_SALA,
-            text: "¡Déjate de juegos! ¡Sé quién eres! Eres John Red. Te vi en las noticias. ¡Aléjate de mí, ya llamé a la policía!",
+            text: "¡Déjate de juegos! ¡Sé quién eres! Eres John Red. ¡Aléjate de mí!",
             name: "Tú",
             next: "confrontar_john"
         },
         "confrontar_john": {
-            img: JOHN_SALA,
-            text: "...Tsk. Qué aguafiestas. Oh, así que sabes quién soy... Qué pena.",
-            name: "John Red",
-            next: "confrontar_asesino"
-        },
-        "confrontar_asesino": {
             img: JOHN_ASESINO,
-            text: "Odio cuando arruinan la inmersión del personaje. Supongo que esto será más rápido de lo que pensé.",
+            text: "Tsk. Qué aguafiestas. Odio cuando arruinan la inmersión del personaje.",
             name: "John Red",
             next: "huida_puerta"
         },
@@ -290,7 +279,6 @@
         },
         "muerte_2": {
             img: PANTALLA_MUERTE,
-            sound: "shake",
             text: "\"Es inhumano... Se movió más rápido que mi propia sombra. El cuchillo... quema...\"",
             name: "Tú",
             next: "fin_malo_2"
@@ -305,31 +293,19 @@
         // --- RUTA SEDUCIR ---
         "ruta_seducir": {
             img: JOHN_SALA,
-            text: "\"Tranquila... Respira. Si corro, me caza como a un animal. Tengo que jugar su juego. Voy a apostarlo todo a una carta: su ego.\"",
+            text: "\"Tranquila... Voy a apostarlo todo a una carta: su ego.\"",
             name: "Tú",
             next: "seducir_dialogo"
         },
         "seducir_dialogo": {
-            img: JOHN_SALA,
-            text: "Vaya... No sabía que Santa Claus sería tan joven... y tan atractivo. Si lo hubiera sabido, te habría dejado la chimenea encendida.",
-            name: "Tú",
-            next: "john_rie"
-        },
-        "john_rie": {
             img: JOHN_RIE,
-            text: "Jajaja... Interesante. Muy interesante.",
-            name: "John Red",
+            text: "Vaya... No sabía que Santa Claus sería tan joven... y tan atractivo.",
+            name: "Tú",
             next: "john_interes"
         },
         "john_interes": {
             img: JOHN_RIE,
-            text: "Normalmente la gente grita o corre cuando me ve. Pero tú... Tú pareces querer abrir tus regalos antes de tiempo.",
-            name: "John Red",
-            next: "decision_chica"
-        },
-        "decision_chica": {
-            img: JOHN_RIE,
-            text: "Dime... ¿Has sido una chica mala este año?",
+            text: "Jajaja... Interesante. Dime... ¿Has sido una chica mala este año?",
             name: "John Red",
             choices: [
                 { text: "He sido una buena chica...", target: "ruta_buena", type: "normal" },
@@ -340,44 +316,31 @@
         // --- RUTA CHICA BUENA (MUERTE) ---
         "ruta_buena": {
             img: JOHN_RIE,
-            text: "\"Intento sonreír dulcemente, esperando que la inocencia me salve.\"",
-            name: "Tú",
-            next: "buena_dialogo"
-        },
-        "buena_dialogo": {
-            img: JOHN_RIE,
             text: "He sido una buena chica todo el año. Merezco algo bueno, ¿verdad?",
             name: "Tú",
             next: "john_buena"
         },
         "john_buena": {
             img: JOHN_RIE,
-            text: "¿Ah, sí? Mmm... Las chicas buenas merecen recompensas especiales. Anda, cierra los ojos y extiende las manos. No hagas trampa.",
+            text: "¿Ah, sí? Mmm... Las chicas buenas merecen recompensas especiales. Cierra los ojos.",
             name: "John Red",
             next: "buena_ojos"
         },
         "buena_ojos": {
             img: BG_NEGRO,
-            text: "\"Gracias a Dios... funcionó. Solo quiere dejarme un regalo y irse. Cierro los ojos, sintiendo un leve alivio.\"",
+            text: "\"Cierro los ojos, sintiendo un leve alivio...\"",
             name: "Tú",
-            next: "buena_espera"
-        },
-        "buena_espera": {
-            img: BG_NEGRO,
-            text: "\"Espero... ...\"",
-            name: "Tú",
-            sound: "shake",
             next: "muerte_3"
         },
         "muerte_3": {
             img: PANTALLA_MUERTE,
-            text: "¡Ah...! ¿Por... qué...? \"El dolor es agudo en mi pecho. No puedo respirar.\"",
+            text: "¡Ah...! ¿Por... qué...?",
             name: "Tú",
             next: "john_regalo_final"
         },
         "john_regalo_final": {
             img: PANTALLA_MUERTE,
-            text: "¿Te gusta mi regalo? Verás, preciosa... para un artista como yo, no hay regalo más hermoso que quitar una vida. Feliz Navidad.",
+            text: "¿Te gusta mi regalo? No hay regalo más hermoso que quitar una vida. Feliz Navidad.",
             name: "John Red",
             next: "fin_malo_3"
         },
@@ -388,22 +351,10 @@
             restart: true
         },
 
-        // --- RUTA CHICA MALA (FINAL DEMO) ---
+        // --- RUTA CHICA MALA ---
         "ruta_mala": {
             img: JOHN_RIE,
-            text: "\"Lo miro directo a los ojos, desafiante. Si voy a morir, será jugando bajo mis propias reglas.\"",
-            name: "Tú",
-            next: "mala_accion"
-        },
-        "mala_accion": {
-            img: JOHN_RIE,
-            text: "He sido una buena chica... \"Doy un paso más hacia él, invadiendo su espacio personal.\"",
-            name: "Tú",
-            next: "mala_deseo"
-        },
-        "mala_deseo": {
-            img: JOHN_RIE,
-            text: "...pero esta noche quiero hacer cosas malas.",
+            text: "He sido buena... pero esta noche quiero hacer cosas malas.",
             name: "Tú",
             next: "john_sorpresa"
         },
@@ -415,58 +366,58 @@
         },
         "mala_tactil": {
             img: JOHN_SALA,
-            text: "\"Pongo una mano sobre su pecho, justo sobre el borde de su traje de Santa.\" Ya que estás aquí... ¿Puedo pedir al Santa como regalo esta noche?",
+            text: "\"Pongo una mano sobre su pecho.\" Ya que estás aquí... ¿Puedo pedir al Santa como regalo?",
             name: "Tú",
-            next: "john_agarre"
-        },
-        "john_agarre": {
-            img: JOHN_RIE, // O una donde se vea más cerca si la tienes
-            text: "\"John Red suelta una risa ronca y me agarra de la cintura con fuerza, atrayéndome hacia él.\"",
-            name: "Narración",
             next: "john_advertencia"
         },
         "john_advertencia": {
-            img: JOHN_SALA, // Se mantiene la tensión
+            img: JOHN_SALA,
             text: "Cuidado con lo que deseas... Santa no acepta devoluciones.",
             name: "John Red",
             next: "cuarto_final"
         },
         "cuarto_final": {
             img: JOHN_CUARTO,
-            text: "\"Ni siquiera sé cómo llegué, pero ahora estoy aquí en mi cuarto, y él me mira desde arriba con esa intensidad depredadora.\"",
+            text: "\"Ahora estoy en mi cuarto, y él me mira desde arriba con intensidad.\"",
             name: "Tú",
-            next: "john_valiente"
+            next: "cama_cg"
         },
-        "john_valiente": {
-            img: JOHN_CUARTO,
-            text: "Bien... Vamos a ver si eres tan valiente como pareces.",
-            name: "John Red",
+        "cama_cg": {
+            img: CG_CAMA,
+            text: "\"Me empuja a la cama. Su mirada es depredadora.\"",
+            name: "Narración",
             next: "john_olvido"
         },
         "john_olvido": {
-            img: JOHN_CUARTO,
+            img: CG_CAMA,
             text: "Olvídate de la Navidad. Esta noche solo existimos tú y yo.",
             name: "John Red",
+            next: "desvestirse"
+        },
+        "desvestirse": {
+            img: JOHN_DESVISTE,
+            text: "'¿No tienes calor?' Se abre el traje. Sus abdominales son perfectos.",
+            name: "Tú",
             next: "fin_demo"
         },
         "fin_demo": {
             img: BG_NEGRO,
-            text: "FIN DE LA DEMO (PRUEBA DE FLUJO)",
+            text: "FIN DE LA DEMO - CONTINUARÁ...",
             name: "Sistema",
             restart: true
         }
     };
 
-    /* MOTOR DEL JUEGO */
+    /* === MOTOR (LÓGICA) === */
     const sceneBack = document.getElementById("scene-layer-back");
     const sceneFront = document.getElementById("scene-layer-front");
+    const flashOverlay = document.getElementById("flash-overlay");
+    
     const textName = document.getElementById("char-name");
     const textDialog = document.getElementById("dialogue-text");
     const nextBtn = document.getElementById("next-btn");
     const choicesArea = document.getElementById("choices-area");
-    const effectLayer = document.getElementById("effect-layer");
 
-    // Función para poner imagen
     function setLayerImage(layer, imgSource) {
         if (imgSource.startsWith("#")) {
             layer.style.backgroundImage = "none";
@@ -482,39 +433,38 @@
         nextBtn.classList.remove("hidden");
         choicesArea.classList.add("hidden");
         choicesArea.innerHTML = "";
-        effectLayer.className = ""; 
+        flashOverlay.classList.remove("flash-active");
 
-        // 1. FUSIÓN DE IMÁGENES
+        // FUSIÓN DE IMAGEN
         if (node.img) {
             setLayerImage(sceneFront, node.img);
             setTimeout(() => { sceneFront.classList.add("fade-in"); }, 50);
             setTimeout(() => {
                 setLayerImage(sceneBack, node.img);
                 sceneFront.classList.remove("fade-in");
-            }, 850);
+            }, 550);
         }
 
-        // 2. TEXTO
+        // TEXTO
         textName.textContent = node.name || "";
         textDialog.textContent = node.text || "...";
 
-        // 3. EFECTOS ESPECIALES
+        // EFECTOS
         if (node.sound === "shake") {
             document.body.classList.add("shake");
             setTimeout(() => document.body.classList.remove("shake"), 500);
         }
         if (node.effect === "flash") {
-            effectLayer.classList.add("red-flash"); // Un flash sutil oscuro
-            setTimeout(() => effectLayer.classList.remove("red-flash"), 200);
+            flashOverlay.classList.add("flash-active");
+            setTimeout(() => flashOverlay.classList.remove("flash-active"), 200);
         }
 
-        // 4. OPCIONES VS SIGUIENTE
+        // OPCIONES
         if (node.choices) {
             nextBtn.classList.add("hidden");
             choicesArea.classList.remove("hidden");
             node.choices.forEach(choice => {
                 const btn = document.createElement("button");
-                // Usamos el estilo visual premium, pero sin lógica de anuncio
                 btn.className = choice.type === "premium" ? "btn btn-premium" : "btn btn-normal";
                 btn.textContent = choice.text;
                 btn.onclick = () => renderNode(choice.target);
@@ -529,7 +479,7 @@
         }
     }
 
-    // Arrancar
+    // INICIO
     window.onload = () => { 
         setLayerImage(sceneBack, story["start"].img);
         renderNode("start"); 
