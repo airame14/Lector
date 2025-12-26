@@ -53,16 +53,34 @@
         /* INTERFAZ */
         #ui-layer { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; z-index: 10; display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; pointer-events: none; background: linear-gradient(to top, rgba(0,0,0,0.9) 10%, transparent 40%); }
         .interactive { pointer-events: auto; }
-        .text-box { background: rgba(10, 10, 10, 0.9); width: 100%; padding: 20px 20px 35px 20px; border-radius: 12px; border: 1px solid #333; min-height: 140px; display: flex; flex-direction: column; position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.5); backdrop-filter: blur(5px); }
+        .text-box { background: rgba(10, 10, 10, 0.7); width: 100%; padding: 20px 20px 35px 20px; border-radius: 12px; border: 1px solid #333; min-height: 140px; display: flex; flex-direction: column; position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.5); backdrop-filter: blur(5px); }
         .name-tag { font-weight: 700; color: #ff4d4d; margin-bottom: 12px; text-transform: uppercase; font-size: 0.9em; letter-spacing: 1.5px; }
         .dialogue { font-size: 1.15em; line-height: 1.6; color: #e0e0e0; margin-bottom: 10px; }
         .next-arrow { position: absolute; bottom: 15px; right: 20px; color: #888; font-size: 1.8em; cursor: pointer; animation: bounce 1s infinite; opacity: 0.8; transition: 0.3s; }
         .next-arrow:hover { color: white; opacity: 1; }
 
-        /* BOTONES */
+                /* BOTONES */
         .choices-container { display: flex; flex-direction: column; gap: 12px; width: 100%; margin-bottom: 20px; }
+        
+        /* Botón Normal */
         .btn { padding: 16px; border-radius: 10px; border: 1px solid #444; cursor: pointer; font-size: 1.05em; font-weight: 600; text-align: center; width: 100%; background: linear-gradient(to bottom, #2a2a2a, #1a1a1a); color: #ddd; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
         .btn:active { background: #111; transform: translateY(2px); box-shadow: none; }
+        
+        /* ESTILO PARA BOTÓN PREMIUM (Dorado) */
+        .btn-premium {
+            background: linear-gradient(45deg, #b8860b, #ffd700, #b8860b) !important; /* El !important asegura que sobreescriba el gris */
+            color: #000 !important; /* Texto negro para que se lea bien */
+            border: 1px solid #fff;
+            text-shadow: none;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+            background-size: 200% auto;
+            font-weight: 800; /* Un poco más grueso */
+            animation: shine 3s infinite linear;
+        }
+        
+        @keyframes shine {
+            to { background-position: 200% center; }
+        }
         
         .hidden { display: none !important; }
         
@@ -141,7 +159,7 @@
         "cn1": { img: CUARTO_NOCHE, text: "Me preparaba para dormir cuando...", name: "Tú", next: "crash" },
         "crash": { img: CUARTO_NOCHE, sound: "shake", text: "CRASH", name: "Sonido", next: "cn2" },
         "cn2": { img: CUARTO_NOCHE, text: "¿Qué...? ¿Qué fue eso?", name: "Tú", next: "cn3" },
-        "cn3": { img: CUARTO_NOCHE, text: "Juraría que cerré la puerta con llave.", name: "Tú", choices: [{ text: "Tengo mucho miedo... mejor me escondo bajo las sábanas y finjo dormir.", target: "ra1" }, { text: "No voy a ser una víctima. Voy a la sala a investigar.", target: "rb1" }] },
+        "cn3": { img: CUARTO_NOCHE, text: "Juraría que cerré la puerta con llave.", name: "Tú", choices: [{ text: "Tengo mucho miedo... mejor me escondo bajo las sábanas y finjo dormir.", target: "ra1" }, { text: "No voy a ser una víctima. Voy a la sala a investigar.", target: "rb1", isPremium: true }] },
         
         // RUTA A: MIEDO
         "ra1": { img: BG_NEGRO, text: "No... no quiero ver. Si no me muevo, quizás se vaya.", name: "Tú", next: "ra2" },
@@ -165,7 +183,7 @@
         "js7": { img: JOHN_SALA, text: "Dijeron que era extremadamente peligroso y manipulador.", name: "Tú", next: "js8" },
         "js8": { img: JOHN_SALA, text: "Dios mío... ¿Por qué yo? ¿Por qué mi casa?", name: "Tú", next: "js9" },
         "js9": { img: JOHN_SALA, text: "Tengo que pensar rápido. Si nota que tengo miedo, estoy muerta.", name: "Tú", next: "jh1" },
-        "jh1": { img: JOHN_SALA, text: "Vaya bienvenida. ¿Es así como tratas a Santa cuando viene a visitarte?", name: "John Red", choices: [{ text: "Sé que no eres Santa. ¡Eres John Red!", target: "rc1" }, { text: "Acercarme sonriendo y seguirle el juego.", target: "rs1" }] },
+        "jh1": { img: JOHN_SALA, text: "Vaya bienvenida. ¿Es así como tratas a Santa cuando viene a visitarte?", name: "John Red", choices: [{ text: "Sé que no eres Santa. ¡Eres John Red!", target: "rc1" }, { text: "Acercarme sonriendo y seguirle el juego.", target: "rs1", isPremium: true }] },
 
         // RUTA CONFRONTAR
         "rc1": { img: JOHN_SALA, text: "– ¡Déjate de juegos! ¡Sé quién eres! Eres John Red. Te vi en las noticias.", name: "Tú", next: "rc2" },
@@ -188,7 +206,7 @@
         "jr1": { img: JOHN_RIE, text: "Jajaja...", name: "John Red", next: "jr2" },
         "jr2": { img: JOHN_RIE, text: "Interesante. Muy interesante. Normalmente la gente grita o corre cuando me ve. Pero tú...", name: "John Red", next: "jr3" },
         "jr3": { img: JOHN_RIE, text: "Tú pareces querer abrir tus regalos antes de tiempo.", name: "John Red", next: "js_preg" },
-        "js_preg": { img: JOHN_SALA, text: "Dime... ¿Has sido una chica mala este año?", name: "John Red", choices: [{ text: "He sido una buena chica... merezco algo bueno, ¿verdad?", target: "rbuena1" }, { text: "He sido buena... pero ahora quiero hacer cosas malas.", target: "rmala1" }] },
+        "js_preg": { img: JOHN_SALA, text: "Dime... ¿Has sido una chica mala este año?", name: "John Red", choices: [{ text: "He sido una buena chica... merezco algo bueno, ¿verdad?", target: "rbuena1" }, { text: "He sido buena... pero ahora quiero hacer cosas malas.", target: "rmala1", isPremium: true }] },
 
         // RUTA CHICA BUENA
         "rbuena1": { img: JOHN_SALA, text: "Intento sonreír dulcemente, esperando que la inocencia me salve.", name: "Tú", next: "rb_habla" },
@@ -228,7 +246,7 @@
         "jce1": { img: JOHN_CERCA, text: "Él rompe la distancia en un segundo. Me agarra de la cintura con sus manos grandes y ásperas, pegándome violentamente contra su cuerpo.", name: "Tú", next: "jce2" },
         "jce2": { img: JOHN_CERCA, text: "El aire se me escapa. Puedo sentirlo todo. Siento su dureza presionando contra mi vientre. Caliente. Firme. Exigente.", name: "Tú", next: "jjce1" },
         "jjce1": { img: JOHN_CERCA, text: "– Dijiste que yo era tu regalo... Pero un regalo no está completo si no lo abres.", name: "John Red", next: "jjce2" },
-        "jjce2": { img: JOHN_CERCA, text: "¿Por qué no desenvuelves tú misma... la parte más importante?", name: "John Red", choices: [{ text: "Bajarle los pantalones", target: "op_a1" }, { text: "Que lo haga él", target: "op_b1" }] },
+        "jjce2": { img: JOHN_CERCA, text: "¿Por qué no desenvuelves tú misma... la parte más importante?", name: "John Red", choices: [{ text: "Bajarle los pantalones", target: "op_a1" }, { text: "Que lo haga él", target: "op_b1", isPremium: true }] },
 
         // OPCION A: BAJARLE PANTALONES
         "op_a1": { img: BG_NEGRO, text: "Mis manos tiemblan, pero no me detengo.", name: "Tú", next: "op_a2" },
@@ -254,7 +272,7 @@
         "cama1": { img: JOHN_CERCA, text: "Caigo sobre el colchón suave, mi cabello se esparce como un abanico sobre las sábanas.", name: "Tú", next: "cama2" },
         "cama2": { img: JOHN_CERCA, text: "Él se inclina sobre mí, como un depredador acorralando a su presa.", name: "Tú", next: "jjce4" },
         "jjce4": { img: JOHN_CERCA, text: "– Una piel tan suave... merece ser cubrida de besos.", name: "John Red", next: "jjce5" },
-        "jjce5": { img: JOHN_CERCA, text: "– Esa bata estorba. Quiero ver mi regalo completo.", name: "John Red", choices: [{ text: "Quitarme la ropa yo misma.", target: "op_a_ropa" }, { text: "Que me la quite él.", target: "op_b_ropa" }] },
+        "jjce5": { img: JOHN_CERCA, text: "– Esa bata estorba. Quiero ver mi regalo completo.", name: "John Red", choices: [{ text: "Quitarme la ropa yo misma.", target: "op_a_ropa" }, { text: "Que me la quite él.", target: "op_b_ropa", isPremium: true }] },
 
         // ROPA OPCION A
         "op_a_ropa": { img: JOHN_CERCA, text: "– Está bien... Mira y sufre.", name: "Tú", next: "opa2" },
@@ -316,7 +334,7 @@
         "nf11": { img: BG_NEGRO, text: "– ¡Ahhh! Dios mío...", name: "Tú", next: "nf12" },
         "nf12": { img: BG_NEGRO, text: "Entra de una sola estocada, llenándome por completo. Me siento estirada, llena, ocupada por su tamaño imponente.", name: "Tú", next: "nf13" },
         "nf13": { img: BG_NEGRO, text: "Es una sensación abrumadora. Siento cómo roza cada pared interna, reclamando mi cuerpo como si fuera su territorio.", name: "Tú", next: "jjnf2" },
-        "jjnf2": { img: BG_NEGRO, text: "– Estás tan apretada... Joder, eres perfecta.", name: "John Red", choices: [{ text: "Dejar que él siga.", target: "op_a_final" }, { text: "Empujarlo y tomar el control.", target: "op_b_final" }] },
+        "jjnf2": { img: BG_NEGRO, text: "– Estás tan apretada... Joder, eres perfecta.", name: "John Red", choices: [{ text: "Dejar que él siga.", target: "op_a_final" }, { text: "Empujarlo y tomar el control.", target: "op_b_final", isPremium: true }] },
 
         // OPCION A FINAL
         "op_a_final": { img: BG_NEGRO, text: "Muerde mi cuello, marcando mi piel mientras sus caderas golpean contra mis nalgas.", name: "Tú", next: "oaf2" },
@@ -365,7 +383,7 @@
         "jjca5": { img: BG_NEGRO, text: "– Descansa ahora... mi chica mala. Feliz Navidad.", name: "John Red", next: "final_bueno_msg" },
 
         // FINAL BUENO COMUN
-        "final_bueno_msg": { img: BG_NEGRO, text: "✨ FINAL BUENO: FELIZ NAVIDAD ✨", name: "Sistema", choices: [{ text: "Terminar Juego", target: "fin_juego" }, { text: "Ver Extra Especial", target: "extra1" }] },
+        "final_bueno_msg": { img: BG_NEGRO, text: "✨ FINAL BUENO: FELIZ NAVIDAD ✨", name: "Sistema", choices: [{ text: "Terminar Juego", target: "fin_juego" }, { text: "Ver Extra Especial", target: "extra1", isPremium: true }] },
         
         // Cierre y Créditos
         "fin_juego": { img: BG_NEGRO, text: "Gracias por jugar.", name: "Sistema", next: "creditos" },
