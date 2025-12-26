@@ -406,8 +406,7 @@
 
     function setLayerImage(layer, imgSource) {
         if (imgSource.startsWith("#")) { layer.style.backgroundImage = "none"; layer.style.backgroundColor = imgSource; }
-        else { layer.style.backgroundColor = "#000"; layer.style.backgroundImage = `url('${imgSource}')`; }
-    }
+              else { layer.style.backgroundColor = "#000"; layer.style.backgroundImage = "url('" + imgSource + "')"; }
 
     function renderNode(nodeId) {
         const node = story[nodeId];
