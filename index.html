@@ -400,7 +400,7 @@
         }
     };
 
-    /* === MOTOR LÓGICO === */
+        /* === MOTOR LÓGICO === */
     let playerName = "Tú";
     const elements = {
         startScreen: document.getElementById("start-screen"),
@@ -426,8 +426,14 @@
     };
 
     function setLayerImage(layer, imgSource) {
-        if (imgSource.startsWith("#")) { layer.style.backgroundImage = "none"; layer.style.backgroundColor = imgSource; }
-        else { layer.style.backgroundColor = "#000"; layer.style.backgroundImage = `url('${imgSource}')`; }
+        if (imgSource.startsWith("#")) { 
+            layer.style.backgroundImage = "none"; 
+            layer.style.backgroundColor = imgSource; 
+        } else { 
+            layer.style.backgroundColor = "#000"; 
+            // CORRECCIÓN SEGURA: Usamos comillas dobles y el signo + (imposible de fallar)
+            layer.style.backgroundImage = "url('" + imgSource + "')"; 
+        }
     }
 
     function renderNode(nodeId) {
@@ -446,7 +452,8 @@
 
         let displayName = node.name === "Tú" ? playerName : node.name;
         elements.textName.textContent = displayName;
-        // Reemplazamos \n por saltos de línea HTML
+        
+        // CORRECCIÓN: Usamos replace para que los créditos y textos respeten los espacios
         elements.textDialog.innerHTML = (node.text || "...").replace(/\n/g, "<br>");
 
         if (node.sound === "shake") { document.body.classList.add("shake"); setTimeout(() => document.body.classList.remove("shake"), 500); }
