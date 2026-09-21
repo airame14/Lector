@@ -1,0 +1,645 @@
+<!DOCTYPE html>  
+<html lang="pt-BR">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">  
+    <title>Doce Pesadelo de Natal - Português</title>  
+    <style>  
+        /* ESTILOS GERAIS */  
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }  
+        body { margin: 0; padding: 0; background-color: #050505; color: white; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; overflow: hidden; height: 100vh; display: flex; justify-content: center; align-items: center; }  
+        #game-container { width: 100%; max-width: 450px; height: 100%; position: relative; background-color: #000; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.8); }  
+
+        /* --- TELA DE INÍCIO --- */  
+        #start-screen {  
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;  
+            background-color: #000;
+            background-image: url('portada_1.jpg');
+            background-size: cover;
+            background-position: center;
+            z-index: 100;  
+            display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start;  
+            padding: 30px; 
+            transition: background-image 0.1s ease-in-out;
+        }  
+        
+        .subtitle { 
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #fff; 
+            font-size: 0.9em; 
+            letter-spacing: 1px; 
+            text-align: right;
+            text-shadow: 1px 1px 5px #000;
+        }  
+
+        /* MENU LATERAL DE INÍCIO */
+        .menu-btn {
+            background: rgba(10, 10, 10, 0.85); 
+            border: 1px solid #ff3333; 
+            padding: 12px 20px; 
+            width: 180px; 
+            color: white; 
+            font-weight: bold; 
+            font-size: 1.1em; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            letter-spacing: 1px; 
+            margin-bottom: 15px;
+            text-align: left;
+            text-transform: uppercase;
+            box-shadow: 0 4px 10px rgba(255, 0, 0, 0.3);
+            transition: 0.3s;
+        }
+        .menu-btn:active { background: #330000; transform: translateX(5px); }
+        
+        #new-game-container {
+            width: 100%;
+            display: none;
+            flex-direction: column;
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #444;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] { background: rgba(255,255,255,0.1); border: 1px solid #444; color: white; padding: 15px; font-size: 1.1em; border-radius: 8px; width: 100%; text-align: center; margin-bottom: 15px; outline: none; transition: 0.3s; }  
+        input:focus { border-color: #ff0000; background: rgba(255,255,255,0.15); }  
+        
+        .btn-start { background: linear-gradient(135deg, #cc0000, #ff0000); border: none; padding: 15px; width: 100%; color: white; font-weight: bold; font-size: 1.2em; border-radius: 8px; cursor: pointer; letter-spacing: 1px; }  
+        .btn-cancel { background: transparent; border: none; color: #888; font-size: 0.9em; margin-top: 10px; cursor: pointer; text-decoration: underline; }
+
+        /* NOTIFICAÇÃO DO SISTEMA */
+        #sys-notification {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(0, 150, 0, 0.9); color: white; padding: 10px 20px;
+            border-radius: 5px; font-weight: bold; font-size: 0.9em;
+            z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .show-noti { opacity: 1 !important; }
+
+        /* CAMADAS DO JOGO */  
+        .scene-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; background-repeat: no-repeat; z-index: 1; }  
+        #scene-layer-front { z-index: 2; opacity: 0; transition: opacity 0.6s ease-in-out; }  
+        .fade-in { opacity: 1 !important; }  
+
+        /* INTERFACE */  
+        #ui-layer { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; z-index: 10; display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; pointer-events: none; background: linear-gradient(to top, rgba(0,0,0,0.9) 10%, transparent 40%); }  
+        .interactive { pointer-events: auto; }  
+        
+        /* Botão de Salvar Pequeno (No Jogo) */
+        #btn-save-ingame {
+            position: absolute; top: -45px; right: 0;
+            background: rgba(0,0,0,0.6); color: #aaa; border: 1px solid #444;
+            padding: 5px 12px; border-radius: 5px; font-size: 0.8em; cursor: pointer;
+        }
+        #btn-save-ingame:active { background: #fff; color: #000; }
+
+        .text-box { background: rgba(10, 10, 10, 0.7); width: 100%; padding: 20px 20px 35px 20px; border-radius: 12px; border: 1px solid #333; min-height: 140px; display: flex; flex-direction: column; position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.5); backdrop-filter: blur(5px); }  
+        .name-tag { font-weight: 700; color: #ff4d4d; margin-bottom: 12px; text-transform: uppercase; font-size: 0.9em; letter-spacing: 1.5px; }  
+        .dialogue { font-size: 1.15em; line-height: 1.6; color: #e0e0e0; margin-bottom: 10px; }  
+        .next-arrow { position: absolute; bottom: 15px; right: 20px; color: #888; font-size: 1.8em; cursor: pointer; animation: bounce 1s infinite; opacity: 0.8; transition: 0.3s; }  
+        .next-arrow:hover { color: white; opacity: 1; }  
+
+        /* BOTÕES DE DECISÃO NORMAIS */  
+        .choices-container { display: flex; flex-direction: column; gap: 12px; width: 100%; margin-bottom: 20px; }  
+        .btn { padding: 16px; border-radius: 10px; border: 1px solid #444; cursor: pointer; font-size: 1.05em; font-weight: 600; text-align: center; width: 100%; background: linear-gradient(to bottom, #2a2a2a, #1a1a1a); color: #ddd; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }  
+        .btn:active { background: #111; transform: translateY(2px); box-shadow: none; }  
+        
+        .hidden { display: none !important; }  
+          
+        /* EFEITOS */  
+        .shake { animation: shake 0.5s; }  
+        .red-flash { position: absolute; top:0; left:0; width:100%; height:100%; background: red; opacity: 0; pointer-events: none; z-index: 20; transition: opacity 0.2s; }  
+        .flash-active { opacity: 0.5 !important; }  
+        .bobbing { animation: bob 2s infinite ease-in-out; }  
+        @keyframes shine { to { background-position: 200% center; } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }  
+        @keyframes shake { 0% { transform: translate(1px, 1px); } 25% { transform: translate(-2px, -2px); } 50% { transform: translate(2px, 2px); } 75% { transform: translate(-1px, -1px); } }  
+        @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }  
+    </style>
+</head>  
+<body>  
+
+<audio id="bg-music" loop></audio>
+<audio id="sfx-player"></audio>
+
+<div id="sys-notification">Salvo com sucesso</div>
+
+<div id="game-container">  
+    <div id="start-screen">  
+        <div class="subtitle" id="progreso-txt"></div>  
+        
+        <!-- MENU PRINCIPAL -->
+        <div id="main-menu">
+            <button class="menu-btn" id="btn-nueva">Novo Jogo</button>
+            <button class="menu-btn" id="btn-cargar">Carregar Jogo</button>
+            <button class="menu-btn" id="btn-salir" onclick="window.location.href='index.html'">Voltar / Idioma</button>
+        </div>
+
+        <!-- CAIXA DE NOME -->
+        <div id="new-game-container">
+            <input type="text" id="player-name-input" placeholder="Digite seu nome..." maxlength="12">  
+            <button id="start-btn" class="btn-start">INICIAR</button>  
+            <button id="cancel-btn" class="btn-cancel">Cancelar</button>
+        </div>
+    </div>  
+    
+    <div id="scene-layer-back" class="scene-layer"></div>  
+    <div id="scene-layer-front" class="scene-layer"></div>  
+    <div id="flash-overlay" class="red-flash"></div>  
+
+    <div id="ui-layer">  
+        <div id="choices-area" class="choices-container interactive hidden"></div>  
+        <div id="text-area" class="text-box interactive hidden">  
+            <button id="btn-save-ingame">Salvar</button>
+            <div id="char-name" class="name-tag"></div>  
+            <div id="dialogue-text" class="dialogue"></div>  
+            <div id="next-btn" class="next-arrow">▼</div>  
+        </div>  
+    </div>
+</div>  
+
+<script>  
+    /* === HISTÓRIA COMPLETA (PORTUGUÊS) === */  
+    const story = {  
+        "start": { img: '#000', text: "Dizem que o Natal é a época mais mágica do ano...", name: "Você", next: "i2" },  
+        "i2": { img: '#000', text: "Risadas, família, presentes debaixo da árvore.", name: "Você", next: "i3" },  
+        "i3": { img: '#000', text: "Mas para mim... é só mais uma noite de silêncio ensurdecedor.", name: "Você", next: "s1" },  
+        "s1": { img: 'sala_luz.jpg', text: "Cheguei do trabalho arrastando os pés. O frio entrou nos meus ossos.", name: "Você", sfx: "puerta_cierra.mp3", next: "s2" },  
+        "s2": { img: 'sala_luz.jpg', text: "Olhe para este lugar... Cheio de luzes e enfeites.", name: "Você", next: "s3" },  
+        "s3": { img: 'sala_luz.jpg', text: "Por que me dei ao trabalho de decorar se moro sozinha? Costume, eu acho.", name: "Você", next: "s4" },  
+        "s4": { img: 'sala_luz.jpg', text: "Haa... É irônico...", name: "Você", next: "s5" },  
+        "s5": { img: 'sala_luz.jpg', text: "Quando eu era pequena, costumava me esconder atrás deste mesmo sofá.", name: "Você", next: "s6" },  
+        "s6": { img: 'sala_luz.jpg', text: "Eu prendia a respiração, esperando ver o Papai Noel descer pela chaminé.", name: "Você", next: "s7" },  
+        "s7": { img: 'sala_luz.jpg', text: "Nunca o vi. O sono sempre me vencia antes da meia-noite.", name: "Você", next: "s8" },  
+        "s8": { img: 'sala_luz.jpg', text: "Coisas de criança ingênua. Milagres não descem por chaminés. Na vida real, se alguém entra na sua casa à meia-noite...", name: "Você", next: "s9" },  
+        "s9": { img: 'sala_luz.jpg', text: "...provavelmente não vem deixar presentes.", name: "Você", effect: "flash", next: "s10" },  
+        "s10": { img: 'sala_luz.jpg', text: "Chega de melancolia. Amanhã é outro dia.", name: "Você", next: "s11" },  
+        "s11": { img: 'sala_luz.jpg', text: "Vou desligar tudo e ir para a cama.", name: "Você", sfx: "puerta_abrir.mp3", next: "snl" },  
+        "snl": { img: 'sala_no_luz.jpg', text: "Só quero dormir e esquecer que é Natal.", name: "Você", sfx: "puerta_cierra.mp3", next: "cn1" },  
+        "cn1": { img: 'cuarto_noche.jpg', text: "Eu estava me preparando para dormir quando...", name: "Você", next: "crash" },  
+        "crash": { img: 'cuarto_noche.jpg', sound: "shake", text: "CRASH", name: "Som", sfx: "crash.mp3", next: "cn2" },  
+        "cn2": { img: 'cuarto_noche.jpg', text: "O que...? O que foi isso?", name: "Você", next: "cn3" },  
+        "cn3": { img: 'cuarto_noche.jpg', text: "Eu juraria que tranquei a porta.", name: "Você", choices: [{ text: "Estou com muito medo... melhor me esconder debaixo das cobertas e fingir que estou dormindo.", target: "ra1" }, { text: "Não serei uma vítima. Vou à sala investigar.", target: "rb1" }] },  
+          
+        // ROTA A: MEDO  
+        "ra1": { img: '#000', text: "Não... não quero ver. Se eu não me mexer, talvez ele vá embora.", name: "Você", next: "ra2" },  
+        "ra2": { img: '#000', text: "Fecho os olhos com força. Meu coração bate tão rápido que meu peito dói.", name: "Você", next: "ra3" },  
+        "ra3": { img: '#000', text: "Ouço passos. Pesados. Lentos. Estão se aproximando da cama...", name: "Você", sfx: "pasos.mp3", next: "ra4" },  
+        "ra4": { img: '#000', text: "Eles param bem ao meu lado.", name: "Você", next: "ra5" },  
+        "ra5": { img: '#000', text: "Por favor, que seja um sonho, por favor...", name: "Você", next: "voz" },  
+        "voz": { img: '#000', text: "– Achei você...", name: "Voz Desconhecida", sound: "shake", next: "m1" },  
+        "m1": { img: 'pantalla_muerte.jpg', text: "Não tive nem tempo de gritar...", name: "Você", sfx: "golpe.mp3", next: "m2" },  
+        "m2": { img: 'pantalla_muerte.jpg', text: "Senti uma explosão de dor na cabeça... frio... e depois nada.", name: "Você", next: "fm1" },  
+        "fm1": { img: '#000', text: "[FINAL RUIM: Morte Entre os Lençóis]", name: "GAME OVER", restart: true, endingId: "malo1" },  
+  
+        // ROTA B: INVESTIGAR  
+        "rb1": { img: 'sala_no_luz.jpg', text: "Tomei coragem e saí.", name: "Você", next: "js1" },  
+        "js1": { img: 'santa_sala.jpg', text: "Lá estava ele. Um homem alto... vestido de Papai Noel?", name: "Você", sfx: "puerta_abrir.mp3", next: "js2" },  
+        "js2": { img: 'santa_sala.jpg', text: "Mas... espere.", name: "Você", next: "js3" },  
+        "js3": { img: 'santa_sala.jpg', text: "Aquele sorriso... Aquele olhar vermelho e frio...", name: "Você", next: "js4" },  
+        "js4": { img: 'santa_sala.jpg', text: "Meu sangue gela. Eu o vi no noticiário esta manhã enquanto tomava café.", name: "Você", next: "js5" },  
+        "js5": { img: 'santa_sala.jpg', text: "É ele. O 'Assassino da Véspera de Natal'. John Red.", name: "Você", next: "js6" },  
+        "js6": { img: 'santa_sala.jpg', text: "Eles estão procurando por um psicopata que escapou da ala psiquiátrica de segurança máxima há dois dias.", name: "Você", next: "js7" },  
+        "js7": { img: 'santa_sala.jpg', text: "Disseram que ele era extremamente perigoso e manipulador.", name: "Você", next: "js8" },  
+        "js8": { img: 'santa_sala.jpg', text: "Meu Deus... Por que eu? Por que minha casa?", name: "Você", next: "js9" },  
+        "js9": { img: 'santa_sala.jpg', text: "Tenho que pensar rápido. Se ele notar que estou com medo, estou morta.", name: "Você", next: "jh1" },  
+        "jh1": { img: 'santa_sala.jpg', text: "Bela recepção. É assim que você trata o Papai Noel quando ele vem te visitar?", name: "John Red", choices: [{ text: "Sei que você não é o Papai Noel. Você é John Red!", target: "rc1" }, { text: "Aproximar-me sorrindo e entrar no jogo dele.", target: "rs1" }] },  
+  
+        // ROTA CONFRONTAR  
+        "rc1": { img: 'santa_sala.jpg', text: "– Chega de joguinhos! Sei quem você é! Você é John Red. Eu te vi no noticiário.", name: "Você", next: "rc2" },  
+        "rc2": { img: 'santa_sala.jpg', text: "– Fique longe de mim, já liguei para a polícia!", name: "Você", next: "jrc1" },  
+        "jrc1": { img: 'santa_sala.jpg', text: "–...Tsk. Que estraga-prazeres. Ah, então você sabe quem eu sou... Que pena.", name: "John Red", next: "jrc2" },  
+        "jrc2": { img: 'santa_sala.jpg', text: "– Odeio quando estragam a imersão do personagem.", name: "John Red", next: "ja1" },  
+        "ja1": { img: 'santa_cara_asesino.jpg', text: "– Acho que isso será mais rápido do que eu pensava.", name: "John Red", next: "huir1" },  
+        "huir1": { img: 'puerta_salir.jpg', text: "– Espere, não-!", name: "Você", sfx: "correr.mp3", next: "huir2" },  
+        "huir2": { img: 'puerta_salir.jpg', text: "Tenho que sair rápido...", name: "Você", next: "m3" },  
+        "m3": { img: 'pantalla_muerte.jpg', text: "É desumano... Ele se moveu mais rápido que minha própria sombra.", name: "Você", sfx: "puñalada.mp3", next: "m4" },  
+        "m4": { img: 'pantalla_muerte.jpg', text: "A faca... queima...", name: "Você", sfx: "cuerpo_cae.mp3", next: "fm2" },  
+        "fm2": { img: '#000', text: "[FINAL RUIM: Enfrentá-lo Não é Uma Opção]", name: "GAME OVER", restart: true, endingId: "malo2" },  
+  
+        // ROTA SEDUZIR  
+        "rs1": { img: 'santa_sala.jpg', text: "Calma... Respire. Se eu correr, ele me caça como um animal.", name: "Você", next: "rs2" },  
+        "rs2": { img: 'santa_sala.jpg', text: "Tenho que jogar o jogo dele. Tenho que ser mais esperta.", name: "Você", next: "rs3" },  
+        "rs3": { img: 'santa_sala.jpg', text: "Vou apostar tudo em uma carta: o ego dele.", name: "Você", next: "habla1" },  
+        "habla1": { img: 'santa_sala.jpg', text: "– Nossa... Não sabia que o Papai Noel seria tão jovem... e tão atraente.", name: "Você", next: "habla2" },  
+        "habla2": { img: 'santa_sala.jpg', text: "– Se eu soubesse, teria deixado a lareira acesa para você.", name: "Você", next: "jr1" },  
+        "jr1": { img: 'santa_rie.jpg', text: "Hahaha...", name: "John Red", next: "jr2" },  
+        "jr2": { img: 'santa_rie.jpg', text: "Interessante. Muito interessante. As pessoas costumam gritar ou correr quando me veem. Mas você...", name: "John Red", next: "jr3" },  
+        "jr3": { img: 'santa_rie.jpg', text: "Você parece querer abrir seus presentes antes da hora.", name: "John Red", next: "js_preg" },  
+        "js_preg": { img: 'santa_sala.jpg', text: "Diga-me... Você foi uma garota má este ano?", name: "John Red", choices: [{ text: "Fui uma boa garota... mereço algo bom, certo?", target: "rbuena1" }, { text: "Fui boa... mas agora quero fazer coisas más.", target: "rmala1" }] },  
+  
+        // ROTA GAROTA BOA  
+        "rbuena1": { img: 'santa_sala.jpg', text: "Tento sorrir docemente, esperando que a inocência me salve.", name: "Você", next: "rb_habla" },  
+        "rb_habla": { img: 'santa_sala.jpg', text: "– Fui uma boa garota o ano todo. Mereço algo bom, certo?", name: "Você", next: "jrb1" },  
+        "jrb1": { img: 'santa_sala.jpg', text: "– Ah, é? Mmm... Garotas boas merecem recompensas especiais.", name: "John Red", next: "jrb2" },  
+        "jrb2": { img: 'santa_sala.jpg', text: "– Vamos, feche os olhos e estenda as mãos. Sem espiar.", name: "John Red", next: "rb_pensar" },  
+        "rb_pensar": { img: 'santa_sala.jpg', text: "Graças a Deus... funcionou. Ele só quer deixar um presente e ir embora. Fecho os olhos, sentindo uma leve onda de alívio.", name: "Você", next: "rb_negro" },  
+        "rb_negro": { img: '#000', text: "Eu espero...", name: "Você", sound: "shake", sfx: "puñalada.mp3", next: "m5" },  
+        "m5": { img: 'pantalla_muerte.jpg', text: "– Ah...! Por... quê...?", name: "Você", sfx: "cuerpo_cae.mp3", next: "m6" },  
+        "m6": { img: 'pantalla_muerte.jpg', text: "A dor no peito é aguda. Não consigo respirar.", name: "Você", next: "jrm1" },  
+        "jrm1": { img: 'pantalla_muerte.jpg', text: "– Gostou do meu presente?", name: "John Red", next: "jrm2" },  
+        "jrm2": { img: 'pantalla_muerte.jpg', text: "– Sabe, linda... para um artista como eu, não há presente mais bonito do que tirar uma vida. Feliz Natal.", name: "John Red", next: "fm3" },  
+        "fm3": { img: '#000', text: "[FINAL RUIM: Presente Errado]", name: "GAME OVER", restart: true, endingId: "malo3" },  
+  
+        // ROTA GAROTA MÁ  
+        "rmala1": { img: 'santa_sala.jpg', text: "Olho diretamente nos olhos dele, desafiadora. Se vou morrer, será jogando com as minhas próprias regras.", name: "Você", next: "rm_habla1" },  
+        "rm_habla1": { img: 'santa_sala.jpg', text: "– Fui uma boa garota...", name: "Você", next: "rm_accion" },  
+        "rm_accion": { img: 'santa_sala.jpg', text: "Dou um passo em direção a ele, invadindo seu espaço pessoal.", name: "Você", next: "rm_habla2" },  
+        "rm_habla2": { img: 'santa_sala.jpg', text: "– ...mas esta noite quero fazer coisas más.", name: "Você", next: "jrr1" },  
+        "jrr1": { img: 'santa_rie.jpg', text: "– Haha... Nossa. Eu não esperava por essa.", name: "John Red", next: "rm_mano" },  
+        "rm_mano": { img: 'santa_sala.jpg', text: "Coloco uma mão em seu peito, bem na borda de sua roupa de Papai Noel.", name: "Você", next: "rm_pedir" },  
+        "rm_pedir": { img: 'santa_sala.jpg', text: "– Já que você está aqui... Posso pedir o próprio Papai Noel como presente esta noite?", name: "Você", next: "jr_agarre" },  
+        "jr_agarre": { img: 'santa_rie.jpg', text: "John Red solta uma risada rouca e agarra minha cintura com força, puxando-me contra ele.", name: "Narração", next: "js_adv" },  
+        "js_adv": { img: 'santa_sala.jpg', text: "Cuidado com o que deseja... Papai Noel não aceita devoluções.", name: "John Red", next: "jc1" },  
+        "jc1": { img: 'santa_cuarto.jpg', text: "Nem sei como cheguei aqui, mas agora estou no meu quarto, e ele me olha de cima com aquela intensidade predatória.", name: "Você", next: "jjc1" },  
+        "jjc1": { img: 'santa_cuarto.jpg', text: "Muito bem... Vamos ver se você é tão corajosa quanto parece.", name: "John Red", next: "jjc2" },  
+        "jjc2": { img: 'santa_cuarto.jpg', text: "Esqueça o Natal. Esta noite, só existimos você e eu.", name: "John Red", next: "rm_desafio" },  
+        "rm_desafio": { img: 'santa_cuarto.jpg', text: "Olho para ele de cima a baixo, mordendo o lábio inferior.", name: "Você", next: "rm_habla3" },  
+        "rm_habla3": { img: 'santa_cuarto.jpg', text: "– Essa roupa de Papai Noel... deve ser sufocante. Não está com calor, meu querido Noel?", name: "Você", next: "rm_paso" },  
+        "rm_paso": { img: 'santa_cuarto.jpg', text: "Dou um passo em sua direção, desafiando-o.", name: "Você", next: "rm_quiero" },  
+        "rm_quiero": { img: 'santa_cuarto.jpg', text: "– Eu quero você sem nada. Agora.", name: "Você", next: "jjc3" },  
+        "jjc3": { img: 'santa_cuarto.jpg', text: "– Seus desejos são ordens, princesa.", name: "John Red", next: "jd1" },  
+
+        // 1. O INÍCIO NO QUARTO (Tirando a roupa)
+        "jd1": { img: 'santa_desviste.jpg', text: "Meu Deus... Eu sabia que ele era forte, mas isso...", name: "Você", next: "jd2" },  
+        "jd2": { img: 'santa_pantalones.jpg', text: "Seus abdominais são tão definidos que parecem esculpidos em mármore frio. Cada músculo conta uma história de violência e poder.", name: "Você", next: "jd3" },  
+        "jd3": { img: 'santa_quitarpantalones.jpg', text: "Ele começa a desabotoar a calça lentamente e a deslizá-la para baixo, mantendo contato visual.", name: "Narração", next: "jd4" },  
+        "jd4": { img: 'santa_quitarpantalones.jpg', text: "Minha mente grita 'Corra, ele é um assassino!', mas meu corpo... meu corpo só quer tocar.", name: "Você", next: "jd5" },  
+        "jd5": { img: 'santa_boxers.jpg', text: "Ele tem pernas fortes, musculosas, como pilares capazes de imobilizar qualquer um.", name: "Você", next: "jd6" },  
+        "jd6": { img: 'santa_boxers.jpg', text: "Não acredito que realmente vou fazer algo com esse cara. Estou louca. Completamente fora de mim.", name: "Você", next: "jce1" },  
+        "jce1": { img: 'santa_cerca.jpg', text: "Ele diminui a distância em um segundo. Agarra minha cintura com suas mãos grandes e ásperas, me imprensando violentamente contra seu corpo.", name: "Você", next: "jce2" },  
+        "jce2": { img: 'santa_cerca.jpg', text: "O ar escapa dos meus pulmões. Consigo sentir tudo. Sinto a dureza dele pressionando contra minha barriga. Quente. Firme. Exigente.", name: "Você", next: "jjce1" },  
+        "jjce1": { img: 'santa_cerca.jpg', text: "– Você disse que eu era o seu presente... Mas um presente não está completo até você desembrulhá-lo.", name: "John Red", next: "jjce2" },  
+        "jjce2": { img: 'santa_cerca.jpg', text: "Por que você mesma não desembrulha... a parte mais importante?", name: "John Red", choices: [{ text: "Abaixar a cueca dele", target: "op_a1" }, { text: "Deixar que ele faça", target: "op_b1" }] },  
+  
+        // 2. OPÇÃO A: ABAIXAR A CUECA
+        "op_a1": { img: '#000', text: "Minhas mãos tremem, mas não paro.", name: "Você", next: "op_a2" },  
+        "op_a2": { img: '#000', text: "Deslizo meus dedos pelo cós da cueca dele. Ele solta um rosnado gutural que faz meu peito vibrar.", name: "Você", next: "op_a3" },  
+        "op_a3": { img: '#000', text: "Abaixo o tecido lentamente... E então... eu vejo.", name: "Você", next: "op_a4" },  
+        "op_a4": { img: '#000', text: "Fico sem fôlego. Liberta do tecido, a masculinidade dele se revela diante dos meus olhos.", name: "Você", next: "op_a5" },  
+        "op_a5": { img: '#000', text: "É... imenso. Como um enorme bastão de doces, grosso e com veias, latejando com cada batida do coração dele.", name: "Você", next: "op_a6" },  
+        "op_a6": { img: '#000', text: "Eu nunca tinha visto nada daquele tamanho. Parece quase irreal, uma arma feita para destruir... ou para dar um prazer insuportável.", name: "Você", next: "jce3" },  
+        "jce3": { img: 'santa_cerca.jpg', text: "– Nossa... O Papai Noel veio bem carregado este ano.", name: "Você", next: "empujon" },  
+  
+        // 3. OPÇÃO B: DEIXAR QUE ELE FAÇA  
+        "op_b1": { img: 'santa_cerca.jpg', text: "– Quero ver. Faça você. Desembrulhe-se para mim.", name: "Você", next: "jjce3" },  
+        "jjce3": { img: 'santa_quitarboxers.jpg', text: "– Gosto quando você me olha assim. Aproveite a vista.", name: "John Red", next: "op_b2" },  
+        "op_b2": { img: '#000', text: "Ele engancha os polegares no cós elástico da cueca e a puxa para baixo com uma calma exasperante, mantendo contato visual.", name: "Você", next: "op_b3" },  
+        "op_b3": { img: '#000', text: "O tecido justo desliza por seus quadris estreitos. O atrito suave do algodão contra a pele é o único som no quarto silencioso.", name: "Você", next: "op_b4" },  
+        "op_b4": { img: '#000', text: "A cueca cai no chão e, finalmente, meu olhar vai direto para o centro das atenções.", name: "Você", next: "op_b5" },  
+        "op_b5": { img: '#000', text: "Lá está. Grosso, pesado e totalmente desperto.", name: "Você", next: "op_b6" },  
+        "op_b6": { img: '#000', text: "Ergue-se com orgulho, uma torre de carne que promete me partir em duas. É uma visão imponente. Brutal. Magnífica.", name: "Você", next: "jce4" },  
+        "jce4": { img: 'santa_cerca.jpg', text: "– Gostou do que vê? Parece que você está ansiosa para experimentar seu brinquedo novo.", name: "John Red", next: "empujon" },  
+  
+        // 4. CONTINUAÇÃO COMUM  
+        "empujon": { img: 'santa_cerca.jpg', sound: "shake", text: "Sem aviso, ele me empurra para trás.", name: "Narração", next: "cama1" },  
+        "cama1": { img: '#000', text: "Caio no colchão macio, meu cabelo se espalhando como um leque sobre os lençóis.", name: "Você", next: "cama2" },  
+        "cama2": { img: 'santa_arriba.jpg', text: "Ele se inclina sobre mim, como um predador encurralando sua presa.", name: "Você", next: "jjce4" },  
+        "jjce4": { img: 'santa_arriba.jpg', text: "– Uma pele tão macia... merece ser coberta de beijos.", name: "John Red", next: "jjce5" },  
+        "jjce5": { img: 'santa_arriba.jpg', text: "– Esse roupão está atrapalhando. Quero ver meu presente inteiro.", name: "John Red", choices: [{ text: "Tirar minha roupa eu mesma.", target: "op_a_ropa" }, { text: "Deixar que ele tire.", target: "op_b_ropa" }] },  
+  
+        // 5. ROUPA OPÇÃO A  
+        "op_a_ropa": { img: 'santa_arriba.jpg', text: "– Tudo bem... Olhe e sofra.", name: "Você", next: "opa2" },  
+        "opa2": { img: '#000', text: "Puxo o roupão pela cabeça e o jogo de lado, depois deslizo minha calcinha lentamente.", name: "Você", next: "opa3" },  
+        "opa3": { img: '#000', text: "Fico completamente exposta diante dele.", name: "Você", next: "opa4" },  
+        "opa4": { img: '#000', text: "Ele não diz nada. Apenas respira ofegante.", name: "Você", sound: "shake", next: "opa5" },  
+        "opa5": { img: '#000', text: "Antes que eu possa reagir, ele me empurra contra o colchão e se coloca entre as minhas pernas. Sem preliminares. A paciência dele acabou.", name: "Você", next: "jjopa1" },  
+        "jjopa1": { img: '#000', text: "– Você já demorou demais.", name: "John Red", next: "opa6" },  
+        "opa6": { img: '#000', text: "Ele agarra minhas coxas e as separa com força, abrindo-me para ele. Abaixa a cabeça de repente e sinto sua boca quente contra a minha pele.", name: "Você", next: "opa7" },  
+        "opa7": { img: '#000', text: "– Ah...!", name: "Você", next: "opa8" },  
+        "opa8": { img: '#000', text: "Sua língua é áspera, determinada. Ele me lambe com força, como um animal faminto devorando sua presa.", name: "Você", next: "opa9" },  
+        "opa9": { img: '#000', text: "Meus dedos se embaraçam em seus cabelos brancos enquanto ele me faz ver estrelas com cada movimento de sua língua.", name: "Você", next: "oral_comun" },  
+  
+        // 6. ROUPA OPÇÃO B  
+        "op_b_ropa": { img: 'santa_arriba.jpg', text: "Estendo os braços para ele, convidando-o.", name: "Você", next: "opb2" },  
+        "opb2": { img: 'santa_arriba.jpg', text: "– Você é quem está com fome... Desembrulhe-me você.", name: "Você", next: "jjopb1" },  
+        "jjopb1": { img: 'santa_arriba.jpg', text: "– Gosto quando você colabora.", name: "John Red", next: "mano1" },  
+        "mano1": { img: 'mano.jpg', text: "Ele se aproxima devagar, o olhar fixo no meu. Toma minha mão esquerda com delicadeza, segurando meu pulso com firmeza, mas sem machucar.", name: "Você", next: "mano2" },  
+        "mano2": { img: 'mano.jpg', text: "Um pequeno sorriso se desenha em seus lábios, quase imperceptível, enquanto acomoda minha palma contra o seu rosto.", name: "Você", next: "mano3" },  
+        "mano3": { img: 'mano_beso.jpg', text: "Ele abaixa o olhar e deposita um beijo suave, quase reverente, bem no centro da minha palma.", name: "Você", next: "mano4" },  
+        "mano4": { img: 'mano_beso.jpg', text: "É um gesto tão íntimo, tão estranhamente terno... se não fosse pela escuridão palpável em seu olhar.", name: "Você", next: "mano5" },  
+        "mano5": { img: 'mano_lengua.jpg', text: "Mas a ternura desaparece rápido. Ele abre levemente a boca e passa a ponta da língua áspera pelo mesmo lugar que acabou de beijar.", name: "Você", next: "mano6" },  
+        "mano6": { img: 'mano_lengua.jpg', text: "– Tão doce...", name: "John Red", next: "mano7" },  
+        "mano7": { img: 'mano_lengua.jpg', text: "Um calafrio percorre minha espinha. Sinto que ele está me saboreando, me provando antes do prato principal.", name: "Você", next: "opb3" },  
+        "opb3": { img: '#000', text: "Seus dedos abaixam as alças do meu roupão. O tecido desliza, revelando minha pele centímetro por centímetro. Ele beija meu pescoço, meu ombro... descendo lenta e tortuosamente.", name: "Você", next: "lp1" },  
+        "lp1": { img: 'levanta_pierna.jpg', text: "Ele pega minha perna e a levanta no ar, segurando meu calcanhar e peito do pé com suas mãos grandes. Ele me domina por completo.", name: "Você", next: "lp2" },  
+        "lp2": { img: 'levanta_pierna.jpg', text: "Ele aproxima meu pé descalço bem perto de seu rosto, fixando aqueles intensos olhos vermelhos nos meus.", name: "Você", next: "bp1" },  
+        "bp1": { img: 'levanta_pierna.jpg', text: "Ele roça os lábios nas pontas dos meus dedos, beijando-os um a um com uma lentidão desesperadora que me faz tremer.", name: "Você", next: "opb4" },  
+        "opb4": { img: '#000', text: "Ele continua subindo, deixando rastros úmidos e pequenas mordidas por toda a minha perna até chegar à parte interna da coxa.", name: "Você", next: "opb5" },  
+        "opb5": { img: '#000', text: "Ele está tão perto do meu centro... Posso sentir sua respiração quente lá embaixo.", name: "Você", next: "opb6" },  
+        "opb6": { img: '#000', text: "Ele puxa minha calcinha para baixo e a joga de lado, deixando-me completamente exposta.", name: "Você", next: "opb7" },  
+        "opb7": { img: '#000', text: "Finalmente, ele separa minhas pernas e se acomoda no meio. Ele me olha como se eu fosse a coisa mais deliciosa que já viu na vida.", name: "Você", next: "jce5" },  
+        "jce5": { img: 'santa_arriba.jpg', text: "– Nossa... Que vista linda. Parece que vou ter que comer este bolo de Natal docinho sozinho.", name: "John Red", next: "opb8" },  
+        "opb8": { img: '#000', text: "Ele afunda o rosto na minha intimidade.", name: "Você", next: "opb9" },  
+        "opb9": { img: '#000', text: "– Oh, Deus...!", name: "Você", next: "oral_comun" },  
+  
+        // 7. ORAL COMUM  
+        "oral_comun": { img: '#000', text: "Sua língua traça círculos perfeitos sobre meu ponto mais sensível, me fazendo ofegar.", name: "Você", next: "oc2" },  
+        "oc2": { img: '#000', text: "Ele sabe exatamente o que fazer. Ele me prova, me saboreia com longas lambidas, alternando pressão e suavidade.", name: "Você", next: "oc3" },  
+        "oc3": { img: '#000', text: "Enquanto sua boca trabalha lá embaixo, suas mãos grandes sobem pelo meu corpo. Suas palmas cobrem meus seios, amassando-os com possessão.", name: "Você", next: "oc4" },  
+        "oc4": { img: '#000', text: "Seus polegares esfregam meus picos endurecidos, beliscando suavemente no mesmo ritmo em que sua língua se move.", name: "Você", next: "oc5" },  
+        "oc5": { img: '#000', text: "A sensação é dupla. Prazer em cima e embaixo.", name: "Você", next: "oc6" },  
+        "oc6": { img: '#000', text: "Estou ficando louca. Ele vai me fazer gritar.", name: "Você", next: "oc7" },  
+        "oc7": { img: '#000', text: "Sinto que estou prestes a me despedaçar. O calor se concentra em um ponto incandescente, uma pressão doce e urgente que me empurra para o abismo.", name: "Você", next: "oc8" },  
+        "oc8": { img: '#000', text: "Estou tão perto... tão perto de tocar o céu.", name: "Você", next: "oc9" },  
+        "oc9": { img: '#000', text: "Mas de repente, tudo para.", name: "Você", next: "oc10" },  
+        "oc10": { img: '#000', text: "A ausência de seu calor é um choque frio. Abro os olhos, atordoada e ofegante, procurando por ele.", name: "Você", next: "jce6" },  
+        "jce6": { img: 'santa_arriba.jpg', text: "Ele levanta a cabeça lentamente. Ele me olha de baixo com aqueles olhos predatórios.", name: "Você", next: "jce7" },  
+        "jce7": { img: 'santa_arriba.jpg', text: "Seus lábios estão úmidos, vermelhos e inchados.", name: "Você", next: "jce8" },  
+        "jce8": { img: 'santa_arriba.jpg', text: "Ele passa a língua lentamente sobre eles, me saboreando com uma calma que contrasta com minha respiração agitada.", name: "Narração", next: "preg_para" },  
+        "preg_para": { img: 'santa_arriba.jpg', text: "—Por que você parou?", name: "Você", next: "preg_para2" },  
+        "preg_para2": { img: 'santa_arriba.jpg', text: "Minha voz sai como uma súplica quebrada, quase um gemido.", name: "Você", next: "negro_final1" },  
+        "negro_final1": { img: '#000', text: "Ele não responde com palavras, não ainda. Ele se arrasta sobre mim, subindo pela cama como uma sombra cobrindo a luz.", name: "Você", next: "nf2" },  
+        "nf2": { img: '#000', text: "Sinto seu peso, seu calor irradiante dominando cada centímetro do meu espaço.", name: "Você", next: "nf3" },  
+        "nf3": { img: '#000', text: "Ele se acomoda com firmeza entre minhas pernas abertas, encaixando seus quadris contra os meus. O atrito de seu desejo contra minha entrada me faz arquear as costas instintivamente.", name: "Você", next: "nf4" },  
+        "nf4": { img: '#000', text: "Ele olha bem nos meus olhos, com uma intensidade que queima mais que o fogo.", name: "Você", next: "jjnf1" },  
+        "jjnf1": { img: '#000', text: "– Não aguento mais... preciso estar dentro de você.", name: "John Red", next: "nf5" },  
+        "nf5": { img: '#000', text: "Sua mão desce para me guiar, alinhando nossos corpos em uma sintonia perfeita e perigosa.", name: "Você", next: "nf6" },  
+        "nf6": { img: '#000', text: "O ar fica denso, carregado com uma eletricidade estática que arrepia minha pele. Não há mais volta agora.", name: "Você", next: "nf7" },  
+        "nf7": { img: '#000', text: "Com um impulso, ele diminui a distância e captura minha boca. O beijo dele é selvagem. Sinto a língua dele invadindo minha boca, provando cada canto, mordendo meu lábio inferior com uma possessividade que me faz gemer.", name: "Você", next: "nf8" },  
+        "nf8": { img: '#000', text: "Enrolo meus braços em torno de seu pescoço e minhas pernas em seu quadril, buscando mais atrito.", name: "Você", next: "nf9" },  
+        "nf9": { img: '#000', text: "Sinto a ponta do seu desejo pressionando minha entrada, quente e latejante.", name: "Você", next: "nf10" },  
+        "nf10": { img: '#000', text: "E então... ele empurra.", name: "Você", next: "nf11" },  
+        "nf11": { img: '#000', text: "– Ahhh! Meu Deus...", name: "Você", next: "nf12" },  
+        "nf12": { img: '#000', text: "Ele entra de uma só vez, me preenchendo completamente. Eu me sinto esticada, cheia, totalmente ocupada por seu tamanho imponente.", name: "Você", next: "nf13" },  
+        "nf13": { img: '#000', text: "É uma sensação avassaladora. Sinto ele roçando cada parede interna, reivindicando meu corpo como se fosse seu território.", name: "Você", next: "jjnf2" },  
+        "jjnf2": { img: '#000', text: "– Você é tão apertada... Porra, você é perfeita.", name: "John Red", choices: [{ text: "Deixar que ele continue.", target: "op_a_final" }, { text: "Empurrá-lo e tomar o controle.", target: "op_b_final" }] },  
+  
+        // 8. OPÇÃO A FINAL (OBEDIENTE)  
+        "op_a_final": { img: '#000', text: "Ele morde meu pescoço, marcando minha pele enquanto seus quadris batem contra minhas nádegas.", name: "Você", next: "oaf2" },  
+        "oaf2": { img: '#000', text: "O som de nossa pele batendo enche o quarto.", name: "Você", next: "oaf3" },  
+        "oaf3": { img: '#000', text: "A mão dele no meu centro não para, me levando à beira da loucura.", name: "Você", next: "oaf4" },  
+        "oaf4": { img: '#000', text: "Ele me dá um tapa sonoro que me faz gritar, e com três estocadas finais brutais...", name: "Você", next: "oaf5" },  
+        "oaf5": { img: '#000', text: "Nós nos desfazemos juntos no escuro.", name: "Você", next: "final_obediente" },  
+        "final_obediente": { img: '#000', text: "[FINAL BOM: Feliz Natal, Minha Garota Obediente]", name: "Sistema", endingId: "bueno1", choices: [{ text: "Fim de Jogo", target: "fin_juego" }, { text: "Ver Extra Especial", target: "extra1" }] },  
+  
+        // 9. OPÇÃO B FINAL (REBELDE / GAROTA MÁ)  
+        "op_b_final": { img: '#000', text: "Coloco as mãos no peito dele e o empurro para trás com força.", name: "Você", next: "obf2" },  
+        "obf2": { img: '#000', text: "– Espere. Parece que você quer levar todo o crédito.", name: "Você", next: "ca1" },  
+        "ca1": { img: 'santa_cama_abajo.jpg', text: "– Ora, ora... Parece que você quer assumir o controle, não é?", name: "John Red", next: "ca2" },  
+        "ca2": { img: 'santa_cama_abajo.jpg', text: "Eu monto sobre ele.", name: "Você", next: "ca3" },  
+        "ca3": { img: 'santa_cama_abajo.jpg', text: "– Sim. Quero ver você de cima.", name: "Você", next: "ca4" },  
+        "ca4": { img: 'santa_cama_abajo.jpg', text: "Eu me acomodo sobre seus quadris e desço lentamente, deixando-o entrar em mim centímetro por centímetro.", name: "Você", next: "ca5" },  
+        "ca5": { img: 'santa_cama_abajo.jpg', text: "Deste ângulo, eu o sinto muito mais profundo. Ele toca lugares que eu nem sabia que existiam, roçando quase no meu útero.", name: "Você", effect: "bob", next: "ca6" },  
+        "ca6": { img: 'santa_cama_abajo.jpg', text: "Começo a me mover. Devagar. Em círculos. É uma tortura deliciosa.", name: "Você", next: "ca_negro" },  
+        "ca_negro": { img: '#000', text: "– Porra...", name: "John Red", next: "can2" },  
+        "can2": { img: '#000', text: "Ele geme roucamente e joga a cabeça para trás.", name: "Você", next: "can3" },  
+        "can3": { img: '#000', text: "Eu me inclino para frente e mordo o pescoço dele. Ele agarra minha bunda com suas mãos grandes.", name: "Você", next: "can4" },  
+        "can4": { img: '#000', text: "Ele me amassa, me bate, deixando suas marcas na minha pele. Aumento o ritmo. Subindo e descendo, cavalgando-o com desespero.", name: "Você", next: "can5" },  
+        "can5": { img: '#000', text: "Estou perto... estou tão perto...", name: "Você", next: "can6" },  
+        "can6": { img: '#000', text: "Mas de repente...", name: "Você", sound: "shake", next: "ca7" },  
+        "ca7": { img: 'santa_cama_abajo.jpg', text: "– Ah! O que...?", name: "Você", next: "ca8" },  
+        "ca8": { img: 'santa_cama_abajo.jpg', text: "Ele me para no ar. Sinto apenas o roçar da ponta dele na minha entrada, mas ele não está dentro. Ele me deixou vazia num instante.", name: "Você", next: "ca9" },  
+        "ca9": { img: 'santa_cama_abajo.jpg', text: "– O que você está fazendo? Eu estava quase lá!", name: "Você", next: "jjca1" },  
+        "jjca1": { img: 'santa_cama_abajo.jpg', text: "– Já estava no limite? Mmm... Não tão rápido, princesa. Implore-me. Implore por isso.", name: "John Red", next: "ca10" },  
+        "ca10": { img: 'santa_cama_abajo.jpg', text: "Minhas bochechas queimam. Meu corpo lateja, precisando desesperadamente dele.", name: "Você", next: "ca11" },  
+        "ca11": { img: 'santa_cama_abajo.jpg', text: "Ugh, ele continua sendo mau até agora... mas não consigo parar.", name: "Você", next: "ca12" },  
+        "ca12": { img: 'santa_cama_abajo.jpg', text: "Ele esfrega a ponta contra o meu centro, me provocando, me fazendo tremer.", name: "Você", next: "ca13" },  
+        "ca13": { img: 'santa_cama_abajo.jpg', text: "– Por favor... Papai Noel... Coloque de novo... Por favor.", name: "Você", next: "jjca2" },  
+        "jjca2": { img: 'santa_cama_abajo.jpg', text: "– Boa garota.", name: "John Red", next: "ca_negro2" },  
+        "ca_negro2": { img: '#000', text: "Ele solta meus quadris e eu caio de uma vez sobre o membro dele. Eu me arqueio diante da sensação intensa.", name: "Você", next: "can2_2" },  
+        "can2_2": { img: '#000', text: "Ele me preenche tão fundo que corta minha respiração. Um gemido ensurdecedor escapa de mim.", name: "Você", next: "can2_3" },  
+        "can2_3": { img: '#000', text: "– Angggh!", name: "Você", next: "can2_4" },  
+        "can2_4": { img: '#000', text: "Sem me dar tempo de recuperar, ele agarra minhas nádegas e começa a investir por baixo com rapidez.", name: "Você", next: "can2_5" },  
+        "can2_5": { img: '#000', text: "Caio sobre o peito dele, gemendo sem controle. Ele captura minha boca. A língua dele brinca com a minha, mas com uma violência feroz, me devorando.", name: "Você", next: "jjca3" },  
+        "jjca3": { img: '#000', text: "– Uff... você já era apertada, mas agora está mais... Você vai me partir em dois se continuar apertando assim.", name: "John Red", next: "can2_6" },  
+        "can2_6": { img: '#000', text: "– Você não pode dizer uma coisa dessas... quando a sua coisa é maior que a média! Ahh! Ahh!", name: "Você", next: "jjca4" },  
+        "jjca4": { img: '#000', text: "– Cale a boca e receba tudo. Eu vou te encher agora mesmo do meu...", name: "John Red", next: "can2_7" },  
+        "can2_7": { img: '#000', text: "Com uma estocada final que parece tocar minha alma, sinto o corpo dele ficar tenso.", name: "Você", next: "can2_8" },  
+        "can2_8": { img: '#000', text: "Sinto a semente quente dele inundando meu interior em ondas. Minhas pernas tremem, perdendo toda a força.", name: "Você", next: "can2_9" },  
+        "can2_9": { img: '#000', text: "Eu me desfaço junto com ele, minha mente em branco, flutuando em puro prazer.", name: "Você", next: "can2_10" },  
+        "can2_10": { img: '#000', text: "Minha respiração vai se acalmando aos poucos.", name: "Você", next: "can2_11" },  
+        "can2_11": { img: '#000', text: "O silêncio volta ao quarto, mas já não parece solitário. Meio adormecida, sinto-o beijar meu pescoço com uma ternura estranha.", name: "Você", next: "jjca5" },  
+        "jjca5": { img: '#000', text: "– Descanse agora... minha garota má. Feliz Natal.", name: "John Red", next: "final_rebelde" },  
+        "final_rebelde": { img: '#000', text: "[FINAL BOM: Feliz Natal, Minha Garota Má]", name: "Sistema", endingId: "bueno2", choices: [{ text: "Fim de Jogo", target: "fin_juego" }, { text: "Ver Extra Especial", target: "extra1" }] },  
+  
+        // Encerramento e Créditos  
+        "fin_juego": { img: '#000', text: "Obrigado por jogar.", name: "Sistema", next: "creditos" },  
+  
+        // EXTRA ESPECIAL 
+        "extra1": { img: 'cuarto_revuelto.jpg', text: "– Mmm...", name: "Você", next: "ex2" },  
+        "ex2": { img: 'cuarto_revuelto.jpg', text: "Ainda dormindo, dou tapinhas no lado da cama procurando calor.", name: "Você", next: "ex3" },  
+        "ex3": { img: 'cuarto_revuelto.jpg', text: "Sinto o vazio. Abro os olhos de repente.", name: "Você", next: "ex4" },  
+        "ex4": { img: 'cuarto_revuelto.jpg', text: "– Foi... foi um sonho? A cama está desarrumada... mas posso ter sido eu me mexendo na noite passada.", name: "Você", next: "ex5" },  
+        "ex5": { img: 'cuarto_revuelto.jpg', text: "Tento me levantar.", name: "Você", sound: "shake", next: "ex6" },  
+        "ex6": { img: 'cuarto_revuelto.jpg', text: "– Ah!", name: "Você", next: "ex7" },  
+        "ex7": { img: 'cuarto_revuelto.jpg', text: "Uma pontada de dor percorre meus quadris e a parte interna das minhas coxas.", name: "Você", next: "ex8" },  
+        "ex8": { img: 'cuarto_revuelto.jpg', text: "Não... definitivamente não foi um sonho! Essa dor... essa sensação de plenitude... Meu Deus.", name: "Você", next: "ex9" },  
+        "ex9": { img: 'cuarto_revuelto.jpg', text: "Ainda bem que tomo pílulas anticoncepcionais pelo meu ciclo irregular.", name: "Você", next: "ex10" },  
+        "ex10": { img: 'cuarto_revuelto.jpg', text: "Viro-me para a mesa de cabeceira procurando meu telefone, mas encontro outra coisa.", name: "Você", next: "ex11" },  
+        "ex11": { img: 'cuarto_revuelto.jpg', text: "– Hmm? Um bilhete?", name: "Você", next: "nota1" },  
+        "nota1": { img: 'mensaje_finalportugues.jpg', text: "\"Espero que não se esqueça de mim. Aguarde meu presente no próximo Natal. Seu querido Papai Noel.\"", name: "Nota", next: "ne1" },  
+        "ne1": { img: '#000', text: "Deixo o bilhete cair, tremendo. Isso tem que ser uma piada...", name: "Você", next: "ne2" },  
+        "ne2": { img: '#000', text: "Achei que ele pouparia minha vida por passar a noite com ele... Achei que ele fugiria e eu nunca mais o veria.", name: "Você", next: "ne3" },  
+        "ne3": { img: '#000', text: "Mas diz... Próximo Natal? O que vai acontecer comigo? Uma parte de mim está aterrorizada.", name: "Você", next: "ne4" },  
+        "ne4": { img: '#000', text: "Eu deveria ligar para a polícia agora mesmo. Mas outra parte...", name: "Você", next: "ne5" },  
+        "ne5": { img: '#000', text: "Toco meus lábios, lembrando dos beijos dele.", name: "Você", next: "ne6" },  
+        "ne6": { img: '#000', text: "...Sei que a noite passada será impossível de esquecer.", name: "Você", next: "fin_extra" },  
+        "fin_extra": { img: '#000', text: "FIM DO EPÍLOGO", name: "Sistema", next: "creditos" },  
+  
+        "creditos": {  
+            img: '#000',  
+            text: "✨ CRÉDITOS ✨\n\nAutora: Aria\n\n<Sonhos entre Travesseiros>\n\n\nObrigado por jogar.",  
+            name: " ",   
+            restart: true  
+        }  
+    };  
+  
+    /* === MOTOR LÓGICO E VARIÁVEIS GLOBAIS === */  
+    let playerName = "Você";  
+    let currentNodeId = "start"; // Para o salvamento
+
+    const elements = {  
+        startScreen: document.getElementById("start-screen"),
+        mainMenu: document.getElementById("main-menu"),
+        newGameContainer: document.getElementById("new-game-container"),
+        btnNueva: document.getElementById("btn-nueva"),
+        btnCargar: document.getElementById("btn-cargar"),
+        btnSalir: document.getElementById("btn-salir"),
+        nameInput: document.getElementById("player-name-input"),  
+        startBtn: document.getElementById("start-btn"), 
+        cancelBtn: document.getElementById("cancel-btn"),
+        sceneBack: document.getElementById("scene-layer-back"),  
+        sceneFront: document.getElementById("scene-layer-front"),  
+        flashOverlay: document.getElementById("flash-overlay"),  
+        textArea: document.getElementById("text-area"),  
+        textName: document.getElementById("char-name"),  
+        textDialog: document.getElementById("dialogue-text"),  
+        nextBtn: document.getElementById("next-btn"),  
+        choicesArea: document.getElementById("choices-area"),
+        btnSaveIngame: document.getElementById("btn-save-ingame"),
+        sysNoti: document.getElementById("sys-notification")
+    };  
+  
+    // --- EFEITO JUMPSCARE NA CAPA ---
+    let jumpscareInterval;
+    function startJumpscare() {
+        jumpscareInterval = setInterval(() => {
+            elements.startScreen.style.backgroundImage = "url('portada_2.jpg')";
+            setTimeout(() => {
+                elements.startScreen.style.backgroundImage = "url('portada_1.jpg')";
+            }, 1500); // 1.5 segundos de glitch
+        }, 10000); // A cada 10 segundos
+    }
+    startJumpscare();
+
+    // Música inicial obrigatória ao interagir
+    function playMenuMusic() {
+        const bgMusic = document.getElementById("bg-music");
+        if(bgMusic.src === "") {
+            bgMusic.src = "dulce_pesadilla.mp3";
+            bgMusic.volume = 0.5;
+            let playPromise = bgMusic.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log("Autoplay bloqueado. Aguardando interação.");
+                });
+            }
+        }
+    }
+
+    window.addEventListener('load', () => {
+        playMenuMusic();
+    });
+
+    elements.startScreen.addEventListener('click', () => {
+        playMenuMusic();
+    }, { once: true });
+
+    // --- CONTROLE DO MENU PRINCIPAL ---
+    elements.btnNueva.onclick = () => {
+        elements.mainMenu.style.display = "none";
+        elements.newGameContainer.style.display = "flex";
+    };
+
+    elements.cancelBtn.onclick = () => {
+        elements.newGameContainer.style.display = "none";
+        elements.mainMenu.style.display = "block";
+    };
+
+    elements.startBtn.onclick = () => {  
+        const inputName = elements.nameInput.value.trim();  
+        if(inputName.length > 0) playerName = inputName;  
+        
+        document.getElementById("bg-music").pause();
+        clearInterval(jumpscareInterval);
+
+        elements.startScreen.classList.add("hidden");  
+        elements.textArea.classList.remove("hidden");  
+        setLayerImage(elements.sceneBack, story["start"].img);  
+        renderNode("start");  
+    };  
+
+    // --- SISTEMA DE SALVAR / CARREGAR ---
+    if(localStorage.getItem('pesadilla_save_node_pt')) {
+        elements.btnCargar.style.opacity = "1";
+    } else {
+        elements.btnCargar.style.opacity = "0.5";
+    }
+
+    elements.btnSaveIngame.onclick = () => {
+        localStorage.setItem('pesadilla_save_node_pt', currentNodeId);
+        localStorage.setItem('pesadilla_save_name_pt', playerName);
+        
+        elements.sysNoti.classList.add("show-noti");
+        setTimeout(() => elements.sysNoti.classList.remove("show-noti"), 2000);
+    };
+
+    elements.btnCargar.onclick = () => {
+        const savedNode = localStorage.getItem('pesadilla_save_node_pt');
+        if(savedNode && story[savedNode]) {
+            playerName = localStorage.getItem('pesadilla_save_name_pt') || "Você";
+            
+            document.getElementById("bg-music").pause();
+            clearInterval(jumpscareInterval);
+
+            elements.startScreen.classList.add("hidden");  
+            elements.textArea.classList.remove("hidden");  
+            setLayerImage(elements.sceneBack, story[savedNode].img);  
+            renderNode(savedNode); 
+        }
+    };
+
+    // Mostrar progresso na tela inicial  
+    let savedEndings = JSON.parse(localStorage.getItem('pesadilla_endings_pt') || '[]');  
+    if (savedEndings.length > 0) {  
+        document.getElementById('progreso-txt').innerHTML = `🏆 Finais Desbloqueados: ${savedEndings.length}/5`;  
+    }  
+
+    // --- RENDERIZAÇÃO DO NÓ ---
+    function setLayerImage(layer, imgSource) {  
+        if (imgSource.startsWith("#")) {   
+            layer.style.backgroundImage = "none";   
+            layer.style.backgroundColor = imgSource;   
+        } else {   
+            layer.style.backgroundColor = "#000";   
+            layer.style.backgroundImage = "url('" + imgSource + "')";   
+        }  
+    }  
+  
+    function renderNode(nodeId) {  
+        currentNodeId = nodeId; 
+        const node = story[nodeId];  
+        elements.nextBtn.classList.remove("hidden");  
+        elements.choicesArea.classList.add("hidden");  
+        elements.choicesArea.innerHTML = "";  
+        elements.flashOverlay.classList.remove("flash-active");  
+        elements.textArea.classList.remove("bobbing");  
+  
+        if (node.img) {  
+            setLayerImage(elements.sceneFront, node.img);  
+            setTimeout(() => { elements.sceneFront.classList.add("fade-in"); }, 50);  
+            setTimeout(() => { setLayerImage(elements.sceneBack, node.img); elements.sceneFront.classList.remove("fade-in"); }, 650);  
+        }  
+  
+        let displayName = node.name === "Você" ? playerName : node.name;  
+        elements.textName.textContent = displayName;  
+          
+        let textoFinal = (node.text || "...").replace(/\n/g, "<br>");  
+        if (node.endingId) {  
+            let unlockedEndings = JSON.parse(localStorage.getItem('pesadilla_endings_pt') || '[]');  
+            if (!unlockedEndings.includes(node.endingId)) {  
+                unlockedEndings.push(node.endingId);  
+                localStorage.setItem('pesadilla_endings_pt', JSON.stringify(unlockedEndings));  
+            }  
+            textoFinal += `<br><br><span style="color: #ffd700; font-weight: bold; font-size: 0.95em; letter-spacing: 1px; display:block; text-align:center;">🏆 Finais Desbloqueados: ${unlockedEndings.length}/5</span>`;  
+        }  
+  
+        elements.textDialog.innerHTML = textoFinal;  
+  
+        if (node.sfx) {
+            const sfxPlayer = document.getElementById("sfx-player");
+            sfxPlayer.src = node.sfx; 
+            sfxPlayer.volume = 1.0; 
+            sfxPlayer.play().catch(e => console.log("SFX bloqueado"));
+        }
+
+        if (node.sound === "shake") { document.body.classList.add("shake"); setTimeout(() => document.body.classList.remove("shake"), 500); }  
+        if (node.effect === "flash") { elements.flashOverlay.classList.add("flash-active"); setTimeout(() => elements.flashOverlay.classList.remove("flash-active"), 200); }  
+        if (node.effect === "bob") { elements.textArea.classList.add("bobbing"); }  
+  
+        if (node.choices) {  
+            elements.nextBtn.classList.add("hidden");  
+            elements.choicesArea.classList.remove("hidden");  
+            node.choices.forEach(choice => {  
+                const btn = document.createElement("button");  
+                btn.className = "btn";  
+                btn.textContent = choice.text;  
+                btn.onclick = () => renderNode(choice.target);  
+                elements.choicesArea.appendChild(btn);  
+            });  
+        } else if (node.restart) {  
+            elements.nextBtn.onclick = () => location.reload();  
+            elements.nextBtn.textContent = "↻ Menu";  
+        } else {  
+            elements.nextBtn.onclick = () => renderNode(node.next);  
+            elements.nextBtn.textContent = "▼";  
+        }  
+    }  
+</script>  </body>  
+</html>
